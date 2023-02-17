@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"github.com/src/main/app/clients"
 	"log"
 	"net/http"
 
@@ -11,6 +12,8 @@ import (
 	"github.com/src/main/app/server"
 	"github.com/src/main/app/services"
 )
+
+var restClients = config.ProvideRestClients()
 
 func Run() error {
 	app := server.New(server.Config{
@@ -23,6 +26,9 @@ func Run() error {
 
 	pingService := services.NewPingService()
 	pingHandler := handlers.NewPingHandler(pingService)
+
+	targetAppClient := clients.NewClient(restClients.Get("target-app"))
+	log.Println(targetAppClient)
 
 	server.RegisterHandler(pingHandler)
 	server.Register(http.MethodGet, "/ping", server.Resolve[handlers.PingHandler]().Ping)

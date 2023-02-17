@@ -113,7 +113,6 @@ func (c Consumer) async(ctx context.Context, msgs []*sqs.Message) {
 
 func (c Consumer) consume(ctx context.Context, msg *sqs.Message) {
 	log.Println(*msg.Body)
-
 	if err := c.client.Delete(ctx, c.config.QueueURL, *msg.ReceiptHandle); err != nil {
 		// Critical error!
 		log.Printf("delete error: %s\n", err.Error())

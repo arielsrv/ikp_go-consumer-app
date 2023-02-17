@@ -11,6 +11,7 @@ import (
 
 	"github.com/src/main/app/helpers/files"
 
+	"github.com/go-chassis/go-archaius"
 	"github.com/src/main/app/config/env"
 )
 
@@ -81,4 +82,8 @@ func String(key string) string {
 
 func Int(key string) int {
 	return config.GetInt(key, 0)
+}
+
+func TryInt(key string, defaultValue int) int {
+	return archaius.GetInt(key, defaultValue) //nolint:typecheck
 }

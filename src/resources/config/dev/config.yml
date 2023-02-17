@@ -16,3 +16,15 @@ consumers:
     profile: default
     region: us-east-1
     name: users-consumer
+
+# rest-pools
+rest:
+  pool:
+    default:
+      pool:
+        size: 20
+        timeout: 2000
+        connection-timeout: 5000
+  client:
+    target-app:
+      pool: default

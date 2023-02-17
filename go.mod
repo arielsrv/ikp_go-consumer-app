@@ -3,6 +3,7 @@ module github.com
 go 1.20
 
 require (
+	github.com/arielsrv/ikp_go-restclient v0.0.2
 	github.com/arielsrv/nrfiber v0.0.2
 	github.com/aws/aws-sdk-go v1.34.28
 	github.com/go-chassis/go-archaius v1.5.6
