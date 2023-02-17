@@ -1,1 +1,18 @@
 app.env: dev
+
+topics:
+  users:
+    id: development
+    secret: development
+    profile: default
+    address: http://localhost:4566
+    region: us-east-1
+    name: users-topic
+
+consumers:
+  users:
+    id: development
+    secret: development
+    profile: default
+    region: us-east-1
+    name: users-consumer

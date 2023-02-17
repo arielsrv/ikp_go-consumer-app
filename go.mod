@@ -4,6 +4,7 @@ go 1.20
 
 require (
 	github.com/arielsrv/nrfiber v0.0.2
+	github.com/aws/aws-sdk-go v1.34.28
 	github.com/go-chassis/go-archaius v1.5.6
 	github.com/gofiber/fiber/v2 v2.42.0
 	github.com/gofiber/swagger v0.1.9
@@ -25,6 +26,7 @@ require (
 	github.com/go-openapi/swag v0.22.3 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/uuid v1.3.0 // indirect
+	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/klauspost/compress v1.15.12 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
