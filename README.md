@@ -6,7 +6,6 @@
 
 ## Developer tools
 
-- [Golang Lint](https://golangci-lint.run/)
 - [Golang Task](https://taskfile.dev/)
 - [Golang Dependencies Update](https://github.com/oligot/go-mod-upgrade)
 
@@ -16,7 +15,6 @@
 
 ```shell
 brew install go-task/tap/go-task
-brew install golangci-lint
 go install github.com/oligot/go-mod-upgrade@latest
 ```
 
@@ -114,12 +112,6 @@ task build
 
 ```shell
 task run
-```
-
-## lint [included rules](.golangci.yml)
-
-```shell
-task lint
 ```
 
 ## test
