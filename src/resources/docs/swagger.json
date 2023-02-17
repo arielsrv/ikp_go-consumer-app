@@ -1,0 +1,33 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "This is a sample golang template api. Have fun.",
+        "title": "Golang Template API",
+        "contact": {},
+        "version": "v1."
+    },
+    "host": "go-fiber-app.herokuapp.com",
+    "basePath": "/",
+    "paths": {
+        "/ping": {
+            "get": {
+                "description": "Ping",
+                "produces": [
+                    "text/plain"
+                ],
+                "tags": [
+                    "Check"
+                ],
+                "summary": "Check if the instance is online",
+                "responses": {
+                    "200": {
+                        "description": "pong",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

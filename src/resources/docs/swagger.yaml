@@ -1,0 +1,22 @@
+basePath: /
+host: go-fiber-app.herokuapp.com
+info:
+  contact: {}
+  description: This is a sample golang template api. Have fun.
+  title: Golang Template API
+  version: v1.
+paths:
+  /ping:
+    get:
+      description: Ping
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: pong
+          schema:
+            type: string
+      summary: Check if the instance is online
+      tags:
+      - Check
+swagger: "2.0"
