@@ -25,12 +25,12 @@ func NewSQS(session *session.Session, timeout time.Duration) SQS {
 	}
 }
 
-func (s SQS) Send(ctx context.Context, req *cloud.SendRequest) (string, error) {
+func (s SQS) Send(ctx context.Context, sendRequest *cloud.SendRequest) (string, error) {
 	ctx, cancel := context.WithTimeout(ctx, s.timeout)
 	defer cancel()
 
-	attributes := make(map[string]*sqs.MessageAttributeValue, len(req.Attributes))
-	for _, attribute := range req.Attributes {
+	attributes := make(map[string]*sqs.MessageAttributeValue, len(sendRequest.Attributes))
+	for _, attribute := range sendRequest.Attributes {
 		attributes[attribute.Key] = &sqs.MessageAttributeValue{
 			StringValue: aws.String(attribute.Value),
 			DataType:    aws.String(attribute.Type),
@@ -39,8 +39,8 @@ func (s SQS) Send(ctx context.Context, req *cloud.SendRequest) (string, error) {
 
 	sendMessageOutput, err := s.client.SendMessageWithContext(ctx, &sqs.SendMessageInput{
 		MessageAttributes: attributes,
-		MessageBody:       aws.String(req.Body),
-		QueueUrl:          aws.String(req.QueueURL),
+		MessageBody:       aws.String(sendRequest.Body),
+		QueueUrl:          aws.String(sendRequest.QueueURL),
 	})
 	if err != nil {
 		return "", fmt.Errorf("send: %w", err)
@@ -74,13 +74,13 @@ func (s SQS) Receive(ctx context.Context, queueURL string, maxMsg int64) ([]*sqs
 	return receiveMessageOutput.Messages, nil
 }
 
-func (s SQS) Delete(ctx context.Context, queueURL, rcvHandle string) error {
+func (s SQS) Delete(ctx context.Context, queueURL, receiptHandle string) error {
 	ctx, cancel := context.WithTimeout(ctx, s.timeout)
 	defer cancel()
 
 	if _, err := s.client.DeleteMessageWithContext(ctx, &sqs.DeleteMessageInput{
 		QueueUrl:      aws.String(queueURL),
-		ReceiptHandle: aws.String(rcvHandle),
+		ReceiptHandle: aws.String(receiptHandle),
 	}); err != nil {
 		return fmt.Errorf("delete: %w", err)
 	}

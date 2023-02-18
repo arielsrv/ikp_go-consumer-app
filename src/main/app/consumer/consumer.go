@@ -37,7 +37,7 @@ func NewConsumer(messageClient cloud.MessageClient, httpClient clients.Client, c
 func (c Consumer) Start(ctx context.Context) {
 	wg := &sync.WaitGroup{}
 	wg.Add(c.config.Workers)
-	
+
 	for i := 1; i <= c.config.Workers; i++ {
 		go c.worker(ctx, wg, i)
 	}
@@ -45,13 +45,13 @@ func (c Consumer) Start(ctx context.Context) {
 	wg.Wait()
 }
 
-func (c Consumer) worker(ctx context.Context, wg *sync.WaitGroup, id int) {
+func (c Consumer) worker(ctx context.Context, wg *sync.WaitGroup, workerId int) {
 	defer wg.Done()
 
 	for {
 		select {
 		case <-ctx.Done():
-			log.Printf("worker %d: stopped\n", id)
+			log.Printf("worker %d: stopped\n", workerId)
 			return
 		default:
 		}
@@ -59,38 +59,36 @@ func (c Consumer) worker(ctx context.Context, wg *sync.WaitGroup, id int) {
 		messages, err := c.messageClient.Receive(ctx, c.config.QueueURL, int64(c.config.MaxMsg))
 		if err != nil {
 			// Critical error!
-			log.Printf("worker %d: receive error: %s\n", id, err.Error())
+			log.Printf("worker %d: receive error: %s\n", workerId, err.Error())
 			continue
 		}
 
-		if len(messages) == 0 {
-			continue
+		if len(messages) != 0 {
+			c.iterateAsync(ctx, messages)
 		}
-
-		c.consumeAll(ctx, messages)
 	}
 }
 
-func (c Consumer) consumeAll(ctx context.Context, messages []*sqs.Message) {
+func (c Consumer) iterateAsync(ctx context.Context, messages []*sqs.Message) {
 	wg := &sync.WaitGroup{}
 	wg.Add(len(messages))
 
 	for _, message := range messages {
 		go func(message *sqs.Message) {
 			defer wg.Done()
-			c.consume(ctx, message)
+			c.pop(ctx, message)
 		}(message)
 	}
 
 	wg.Wait()
 }
 
-type AwsMessage struct {
+type AWSMessageDTO struct {
 	Message string
 }
 
-func (c Consumer) consume(ctx context.Context, message *sqs.Message) {
-	var awsMessage AwsMessage
+func (c Consumer) pop(ctx context.Context, message *sqs.Message) {
+	var awsMessage AWSMessageDTO
 	err := json.Unmarshal([]byte(*message.Body), &awsMessage)
 	if err != nil {
 		log.Printf("invalid message error: %s, msg: %s\n", err.Error(), *message.Body)

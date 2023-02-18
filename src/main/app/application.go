@@ -33,7 +33,7 @@ func Run() error {
 	server.RegisterHandler(pingHandler)
 	server.Register(http.MethodGet, "/ping", server.Resolve[handlers.PingHandler]().Ping)
 
-	consume()
+	go consume()
 
 	host := config.String("HOST")
 	if env.IsEmpty(host) && !env.IsDev() {
