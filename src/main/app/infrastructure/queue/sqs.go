@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sqs"
 )
 
@@ -34,13 +33,18 @@ type Attribute struct {
 
 type Client struct {
 	timeout time.Duration
-	client  sqsiface.SQSAPI
+	sqsiface.SQSAPI
 }
 
-func NewClient(session *session.Session, timeout time.Duration) Client {
+type MockClient struct {
+	Client
+	messages map[string][]*sqs.Message
+}
+
+func NewClient(timeout time.Duration, client sqsiface.SQSAPI) Client {
 	return Client{
 		timeout: timeout,
-		client:  sqs.New(session),
+		SQSAPI:  client,
 	}
 }
 
@@ -56,7 +60,7 @@ func (s Client) Send(ctx context.Context, sendRequest *SendRequest) (string, err
 		}
 	}
 
-	sendMessageOutput, err := s.client.SendMessageWithContext(ctx, &sqs.SendMessageInput{
+	sendMessageOutput, err := s.SendMessageWithContext(ctx, &sqs.SendMessageInput{
 		MessageAttributes: attributes,
 		MessageBody:       aws.String(sendRequest.Body),
 		QueueUrl:          aws.String(sendRequest.QueueURL),
@@ -80,7 +84,7 @@ func (s Client) Receive(ctx context.Context, queueURL string, maxMsg int64) ([]*
 	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(waitTimeSeconds+5))
 	defer cancel()
 
-	receiveMessageOutput, err := s.client.ReceiveMessageWithContext(ctx, &sqs.ReceiveMessageInput{
+	receiveMessageOutput, err := s.ReceiveMessageWithContext(ctx, &sqs.ReceiveMessageInput{
 		QueueUrl:              aws.String(queueURL),
 		MaxNumberOfMessages:   aws.Int64(maxMsg),
 		WaitTimeSeconds:       aws.Int64(waitTimeSeconds),
@@ -97,7 +101,7 @@ func (s Client) Delete(ctx context.Context, queueURL, receiptHandle string) erro
 	ctx, cancel := context.WithTimeout(ctx, s.timeout)
 	defer cancel()
 
-	if _, err := s.client.DeleteMessageWithContext(ctx, &sqs.DeleteMessageInput{
+	if _, err := s.DeleteMessageWithContext(ctx, &sqs.DeleteMessageInput{
 		QueueUrl:      aws.String(queueURL),
 		ReceiptHandle: aws.String(receiptHandle),
 	}); err != nil {

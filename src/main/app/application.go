@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"fmt"
+	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/src/main/app/consumer"
 	"github.com/src/main/app/infrastructure/queue"
 	"github.com/src/main/app/pusher"
@@ -75,7 +76,8 @@ func consume() {
 
 	httpClient := rest.NewClient(restClients.Get("target-app"))
 	httpPusher := pusher.NewHttpPusher(httpClient)
-	queue := queue.NewClient(session, time.Second*5)
+	sqsClient := sqs.New(session)
+	queue := queue.NewClient(time.Second*5, sqsClient)
 
 	// Instantiate consumer and start consuming.
 	consumer.NewConsumer(queue, httpPusher, consumer.Config{
