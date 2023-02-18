@@ -1,21 +1,22 @@
 app.env: dev
 
+aws:
+  url: http://localhost:4566
+  id: development
+  secret: development
+  profile: default
+  region: us-east-1
+
 topics:
   users:
-    id: development
-    secret: development
-    profile: default
-    address: http://localhost:4566
-    region: us-east-1
     name: users-topic
 
 consumers:
   users:
-    id: development
-    secret: development
-    profile: default
-    region: us-east-1
     name: users-consumer
+    queue-url: http://localhost:4566/000000000000/users-consumer
+    max-workers: 2
+    max-messages: 10
 
 # rest-pools
 rest:
