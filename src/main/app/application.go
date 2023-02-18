@@ -75,10 +75,10 @@ func consume() {
 
 	messageClient := infrastructure.NewSQS(session, time.Second*5)
 	httpClient := clients.NewClient(restClients.Get("target-app"))
-	pusher := pusher.NewHttpPusher(httpClient)
+	httpPusher := pusher.NewHttpPusher(httpClient)
 
 	// Instantiate consumer and start consuming.
-	consumer.NewConsumer(messageClient, pusher, consumer.Config{
+	consumer.NewConsumer(messageClient, httpPusher, consumer.Config{
 		QueueURL: config.String("consumers.users.queue-url"),
 		Workers:  config.TryInt("consumers.users.workers", runtime.NumCPU()-1),
 		MaxMsg:   config.TryInt("consumers.users.workers.messages", 10),
