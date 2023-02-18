@@ -23,10 +23,8 @@ var restClients = config.ProvideRestClients()
 func Run() error {
 	app := server.New(server.Config{
 		Recovery:  true,
-		Swagger:   true,
 		RequestID: true,
 		Logger:    true,
-		NewRelic:  true,
 	})
 
 	pingService := services.NewPingService()
