@@ -3,7 +3,6 @@ package infrastructure
 import (
 	"context"
 	"fmt"
-	"github.com/src/main/app/infrastructure/cloud"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -11,7 +10,26 @@ import (
 	"github.com/aws/aws-sdk-go/service/sqs"
 )
 
-var _ cloud.MessageClient = SQS{}
+type MessageClient interface {
+	// Send a message to queue and returns its message ID.
+	Send(ctx context.Context, sendRequest *SendRequest) (string, error)
+	// Receive Long polls given amount of messages from a queue.
+	Receive(ctx context.Context, queueURL string, maxMsg int64) ([]*sqs.Message, error)
+	// Delete Deletes a message from a queue.
+	Delete(ctx context.Context, queueURL, receiptHandle string) error
+}
+
+type SendRequest struct {
+	QueueURL   string
+	Body       string
+	Attributes []Attribute
+}
+
+type Attribute struct {
+	Key   string
+	Value string
+	Type  string
+}
 
 type SQS struct {
 	timeout time.Duration
@@ -25,7 +43,7 @@ func NewSQS(session *session.Session, timeout time.Duration) SQS {
 	}
 }
 
-func (s SQS) Send(ctx context.Context, sendRequest *cloud.SendRequest) (string, error) {
+func (s SQS) Send(ctx context.Context, sendRequest *SendRequest) (string, error) {
 	ctx, cancel := context.WithTimeout(ctx, s.timeout)
 	defer cancel()
 

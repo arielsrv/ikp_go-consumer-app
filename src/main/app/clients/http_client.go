@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-type ITargetAppClient interface {
+type IHttpClient interface {
 	PostMessage(targetAppRequest *RequestBody) error
 }
 

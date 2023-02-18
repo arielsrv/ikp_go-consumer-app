@@ -6,6 +6,7 @@ import (
 	"github.com/src/main/app/clients"
 	"github.com/src/main/app/consumer"
 	"github.com/src/main/app/infrastructure"
+	"github.com/src/main/app/pusher"
 	"log"
 	"net/http"
 	"runtime"
@@ -72,14 +73,12 @@ func consume() {
 		log.Fatalln(err)
 	}
 
-	// Instantiate messageClient.
 	messageClient := infrastructure.NewSQS(session, time.Second*5)
-
-	// Instantiate httpClient.
 	httpClient := clients.NewClient(restClients.Get("target-app"))
+	pusher := pusher.NewHttpPusher(httpClient)
 
 	// Instantiate consumer and start consuming.
-	consumer.NewConsumer(messageClient, httpClient, consumer.Config{
+	consumer.NewConsumer(messageClient, pusher, consumer.Config{
 		QueueURL: config.String("consumers.users.queue-url"),
 		Workers:  config.TryInt("consumers.users.workers", runtime.NumCPU()-1),
 		MaxMsg:   config.TryInt("consumers.users.workers.messages", 10),

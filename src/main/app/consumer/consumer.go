@@ -2,9 +2,8 @@ package consumer
 
 import (
 	"context"
-	"encoding/json"
-	"github.com/src/main/app/clients"
-	"github.com/src/main/app/infrastructure/cloud"
+	"github.com/src/main/app/infrastructure"
+	"github.com/src/main/app/pusher"
 	"log"
 	"sync"
 
@@ -21,15 +20,15 @@ type Config struct {
 }
 
 type Consumer struct {
-	messageClient cloud.MessageClient
-	httpClient    clients.Client
+	messageClient infrastructure.MessageClient
+	pusher        pusher.Pusher
 	config        Config
 }
 
-func NewConsumer(messageClient cloud.MessageClient, httpClient clients.Client, config Config) Consumer {
+func NewConsumer(messageClient infrastructure.MessageClient, pusher pusher.Pusher, config Config) Consumer {
 	return Consumer{
 		messageClient: messageClient,
-		httpClient:    httpClient,
+		pusher:        pusher,
 		config:        config,
 	}
 }
@@ -64,12 +63,12 @@ func (c Consumer) worker(ctx context.Context, wg *sync.WaitGroup, workerId int) 
 		}
 
 		if len(messages) != 0 {
-			c.iterateAsync(ctx, messages)
+			c.asyncPop(ctx, messages)
 		}
 	}
 }
 
-func (c Consumer) iterateAsync(ctx context.Context, messages []*sqs.Message) {
+func (c Consumer) asyncPop(ctx context.Context, messages []*sqs.Message) {
 	wg := &sync.WaitGroup{}
 	wg.Add(len(messages))
 
@@ -83,26 +82,14 @@ func (c Consumer) iterateAsync(ctx context.Context, messages []*sqs.Message) {
 	wg.Wait()
 }
 
-type AWSMessageDTO struct {
-	Message string
-}
-
 func (c Consumer) pop(ctx context.Context, message *sqs.Message) {
-	var awsMessage AWSMessageDTO
-	err := json.Unmarshal([]byte(*message.Body), &awsMessage)
+	err := c.pusher.SendMessage(message)
 	if err != nil {
-		log.Printf("invalid message error: %s, msg: %s\n", err.Error(), *message.Body)
+		log.Printf("pusher error: %s, msg: %s\n", err.Error(), *message.Body)
 	} else {
-		requestBody := new(clients.RequestBody)
-		requestBody.Msg = awsMessage.Message
-		err = c.httpClient.PostMessage(requestBody)
+		err = c.messageClient.Delete(ctx, c.config.QueueURL, *message.ReceiptHandle)
 		if err != nil {
-			log.Printf("pusher error: %s, msg: %s\n", err.Error(), *message.Body)
-		} else {
-			err = c.messageClient.Delete(ctx, c.config.QueueURL, *message.ReceiptHandle)
-			if err != nil {
-				log.Printf("delete error: %s, msg: %s\n", err.Error(), *message.Body)
-			}
+			log.Printf("delete error: %s, msg: %s\n", err.Error(), *message.Body)
 		}
 	}
 }
