@@ -2,8 +2,8 @@ package consumer
 
 import (
 	"context"
-	"github.com/src/main/app/infrastructure/queue"
 	"github.com/src/main/app/pusher"
+	"github.com/src/main/app/queue"
 	"log"
 	"sync"
 
