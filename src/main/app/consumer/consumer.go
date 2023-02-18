@@ -2,7 +2,7 @@ package consumer
 
 import (
 	"context"
-	"github.com/src/main/app/infrastructure"
+	"github.com/src/main/app/infrastructure/queue"
 	"github.com/src/main/app/pusher"
 	"log"
 	"sync"
@@ -11,7 +11,7 @@ import (
 )
 
 type Config struct {
-	// Queue URL to receive messages from.
+	// QueueClient URL to receive messages from.
 	QueueURL string
 	// Maximum workers that will independently receive messages from a queue.
 	Workers int
@@ -20,12 +20,12 @@ type Config struct {
 }
 
 type Consumer struct {
-	messageClient infrastructure.MessageClient
+	messageClient queue.MessageClient
 	pusher        pusher.Pusher
 	config        Config
 }
 
-func NewConsumer(messageClient infrastructure.MessageClient, pusher pusher.Pusher, config Config) Consumer {
+func NewConsumer(messageClient queue.MessageClient, pusher pusher.Pusher, config Config) Consumer {
 	return Consumer{
 		messageClient: messageClient,
 		pusher:        pusher,

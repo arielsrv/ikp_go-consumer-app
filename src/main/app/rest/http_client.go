@@ -1,4 +1,4 @@
-package clients
+package rest
 
 import (
 	"github.com/arielsrv/ikp_go-restclient/rest"

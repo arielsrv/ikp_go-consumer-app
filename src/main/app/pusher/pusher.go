@@ -3,7 +3,7 @@ package pusher
 import (
 	"encoding/json"
 	"github.com/aws/aws-sdk-go/service/sqs"
-	"github.com/src/main/app/clients"
+	"github.com/src/main/app/rest"
 )
 
 type Pusher interface {
@@ -11,14 +11,14 @@ type Pusher interface {
 }
 
 type HttpPusher struct {
-	httpClient clients.IHttpClient
+	httpClient rest.IHttpClient
 }
 
 type MessageDTO struct {
 	Message string
 }
 
-func NewHttpPusher(httpClient clients.IHttpClient) *HttpPusher {
+func NewHttpPusher(httpClient rest.IHttpClient) *HttpPusher {
 	return &HttpPusher{
 		httpClient: httpClient,
 	}
@@ -30,7 +30,7 @@ func (h HttpPusher) SendMessage(message *sqs.Message) error {
 	if err != nil {
 		return nil
 	}
-	requestBody := new(clients.RequestBody)
+	requestBody := new(rest.RequestBody)
 	requestBody.Msg = messageDTO.Message
 	err = h.httpClient.PostMessage(requestBody)
 	if err != nil {

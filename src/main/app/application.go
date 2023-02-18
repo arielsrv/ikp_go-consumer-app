@@ -3,10 +3,10 @@ package app
 import (
 	"context"
 	"fmt"
-	"github.com/src/main/app/clients"
 	"github.com/src/main/app/consumer"
-	"github.com/src/main/app/infrastructure"
+	"github.com/src/main/app/infrastructure/queue"
 	"github.com/src/main/app/pusher"
+	"github.com/src/main/app/rest"
 	"log"
 	"net/http"
 	"runtime"
@@ -62,7 +62,7 @@ func consume() {
 	defer cancel()
 
 	// Create a session instance.
-	session, err := infrastructure.New(infrastructure.Config{
+	session, err := queue.New(queue.Config{
 		Address: config.String("aws.url"),
 		Region:  config.String("aws.region"),
 		Profile: config.String("aws.profile"),
@@ -73,12 +73,12 @@ func consume() {
 		log.Fatalln(err)
 	}
 
-	messageClient := infrastructure.NewSQS(session, time.Second*5)
-	httpClient := clients.NewClient(restClients.Get("target-app"))
+	httpClient := rest.NewClient(restClients.Get("target-app"))
 	httpPusher := pusher.NewHttpPusher(httpClient)
+	queue := queue.NewClient(session, time.Second*5)
 
 	// Instantiate consumer and start consuming.
-	consumer.NewConsumer(messageClient, httpPusher, consumer.Config{
+	consumer.NewConsumer(queue, httpPusher, consumer.Config{
 		QueueURL: config.String("consumers.users.queue-url"),
 		Workers:  config.TryInt("consumers.users.workers", runtime.NumCPU()-1),
 		MaxMsg:   config.TryInt("consumers.users.workers.messages", 10),

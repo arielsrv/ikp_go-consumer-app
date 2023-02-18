@@ -1,4 +1,4 @@
-package infrastructure
+package queue
 
 import (
 	"context"
@@ -32,19 +32,19 @@ type Attribute struct {
 	Type  string
 }
 
-type SQS struct {
+type Client struct {
 	timeout time.Duration
 	client  sqsiface.SQSAPI
 }
 
-func NewSQS(session *session.Session, timeout time.Duration) SQS {
-	return SQS{
+func NewClient(session *session.Session, timeout time.Duration) Client {
+	return Client{
 		timeout: timeout,
 		client:  sqs.New(session),
 	}
 }
 
-func (s SQS) Send(ctx context.Context, sendRequest *SendRequest) (string, error) {
+func (s Client) Send(ctx context.Context, sendRequest *SendRequest) (string, error) {
 	ctx, cancel := context.WithTimeout(ctx, s.timeout)
 	defer cancel()
 
@@ -68,7 +68,7 @@ func (s SQS) Send(ctx context.Context, sendRequest *SendRequest) (string, error)
 	return *sendMessageOutput.MessageId, nil
 }
 
-func (s SQS) Receive(ctx context.Context, queueURL string, maxMsg int64) ([]*sqs.Message, error) {
+func (s Client) Receive(ctx context.Context, queueURL string, maxMsg int64) ([]*sqs.Message, error) {
 	if maxMsg < 1 || maxMsg > 10 {
 		return nil, fmt.Errorf("receive argument: msgMax valid values: 1 to 10: given %d", maxMsg)
 	}
@@ -93,7 +93,7 @@ func (s SQS) Receive(ctx context.Context, queueURL string, maxMsg int64) ([]*sqs
 	return receiveMessageOutput.Messages, nil
 }
 
-func (s SQS) Delete(ctx context.Context, queueURL, receiptHandle string) error {
+func (s Client) Delete(ctx context.Context, queueURL, receiptHandle string) error {
 	ctx, cancel := context.WithTimeout(ctx, s.timeout)
 	defer cancel()
 

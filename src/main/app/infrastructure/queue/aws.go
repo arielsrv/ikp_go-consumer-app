@@ -1,4 +1,4 @@
-package infrastructure
+package queue
 
 import (
 	"github.com/aws/aws-sdk-go/aws"
