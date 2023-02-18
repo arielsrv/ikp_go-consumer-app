@@ -9,24 +9,24 @@ import (
 	"github.com/aws/aws-sdk-go/service/sqs"
 )
 
-type ConsumerType string
+type Type string
 
 const (
 	// SyncConsumer Consumers to consume messages one by one.
 	// A single goroutine handles all messages.
 	// Progression is slower and requires less system resource.
 	// Ideal for quiet/non-critical queues.
-	SyncConsumer ConsumerType = "blocking"
+	SyncConsumer Type = "blocking"
 	// AsyncConsumer Consumers to consume messages at the same time.
 	// Runs an individual goroutine per message.
 	// Progression is faster and requires more system resource.
 	// Ideal for busy/critical queues.
-	AsyncConsumer ConsumerType = "non-blocking"
+	AsyncConsumer Type = "non-blocking"
 )
 
-type ConsumerConfig struct {
+type Config struct {
 	// Instructs whether to consume messages come from a worker synchronously or asynchronous.
-	Type ConsumerType
+	Type Type
 	// Queue URL to receive messages from.
 	QueueURL string
 	// Maximum workers that will independently receive messages from a queue.
@@ -37,10 +37,10 @@ type ConsumerConfig struct {
 
 type Consumer struct {
 	client cloud.MessageClient
-	config ConsumerConfig
+	config Config
 }
 
-func NewConsumer(client cloud.MessageClient, config ConsumerConfig) Consumer {
+func NewConsumer(client cloud.MessageClient, config Config) Consumer {
 	return Consumer{
 		client: client,
 		config: config,

@@ -80,7 +80,7 @@ func consume() {
 	client := infrastructure.NewSQS(session, time.Second*5)
 
 	// Instantiate consumer and start consuming.
-	consumer.NewConsumer(client, consumer.ConsumerConfig{
+	consumer.NewConsumer(client, consumer.Config{
 		Type:      consumer.AsyncConsumer,
 		QueueURL:  config.String("consumers.users.queue-url"),
 		MaxWorker: config.TryInt("consumers.users.max-workers", 2),
