@@ -71,49 +71,48 @@ func (c Consumer) worker(ctx context.Context, wg *sync.WaitGroup, id int) {
 		default:
 		}
 
-		msgs, err := c.client.Receive(ctx, c.config.QueueURL, int64(c.config.MaxMsg))
+		messages, err := c.client.Receive(ctx, c.config.QueueURL, int64(c.config.MaxMsg))
 		if err != nil {
 			// Critical error!
 			log.Printf("worker %d: receive error: %s\n", id, err.Error())
 			continue
 		}
 
-		if len(msgs) == 0 {
+		if len(messages) == 0 {
 			continue
 		}
 
 		if c.config.Type == SyncConsumer {
-			c.sync(ctx, msgs)
+			c.sync(ctx, messages)
 		} else {
-			c.async(ctx, msgs)
+			c.async(ctx, messages)
 		}
 	}
 }
 
-func (c Consumer) sync(ctx context.Context, msgs []*sqs.Message) {
-	for _, msg := range msgs {
-		c.consume(ctx, msg)
+func (c Consumer) sync(ctx context.Context, messages []*sqs.Message) {
+	for _, message := range messages {
+		c.consume(ctx, message)
 	}
 }
 
-func (c Consumer) async(ctx context.Context, msgs []*sqs.Message) {
+func (c Consumer) async(ctx context.Context, messages []*sqs.Message) {
 	wg := &sync.WaitGroup{}
-	wg.Add(len(msgs))
+	wg.Add(len(messages))
 
-	for _, msg := range msgs {
-		go func(msg *sqs.Message) {
+	for _, message := range messages {
+		go func(message *sqs.Message) {
 			defer wg.Done()
-
-			c.consume(ctx, msg)
-		}(msg)
+			c.consume(ctx, message)
+		}(message)
 	}
 
 	wg.Wait()
 }
 
-func (c Consumer) consume(ctx context.Context, msg *sqs.Message) {
-	log.Println(*msg.Body)
-	if err := c.client.Delete(ctx, c.config.QueueURL, *msg.ReceiptHandle); err != nil {
+func (c Consumer) consume(ctx context.Context, message *sqs.Message) {
+	log.Println(*message.Body)
+	if err := c.client.Delete(ctx, c.config.QueueURL, *message.ReceiptHandle); err != nil {
 		// Critical error!
 		log.Printf("delete error: %s\n", err.Error())
 	}

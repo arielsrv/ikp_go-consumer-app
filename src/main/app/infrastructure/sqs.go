@@ -29,16 +29,16 @@ func (s SQS) Send(ctx context.Context, req *cloud.SendRequest) (string, error) {
 	ctx, cancel := context.WithTimeout(ctx, s.timeout)
 	defer cancel()
 
-	attrs := make(map[string]*sqs.MessageAttributeValue, len(req.Attributes))
-	for _, attr := range req.Attributes {
-		attrs[attr.Key] = &sqs.MessageAttributeValue{
-			StringValue: aws.String(attr.Value),
-			DataType:    aws.String(attr.Type),
+	attributes := make(map[string]*sqs.MessageAttributeValue, len(req.Attributes))
+	for _, attribute := range req.Attributes {
+		attributes[attribute.Key] = &sqs.MessageAttributeValue{
+			StringValue: aws.String(attribute.Value),
+			DataType:    aws.String(attribute.Type),
 		}
 	}
 
-	res, err := s.client.SendMessageWithContext(ctx, &sqs.SendMessageInput{
-		MessageAttributes: attrs,
+	sendMessageOutput, err := s.client.SendMessageWithContext(ctx, &sqs.SendMessageInput{
+		MessageAttributes: attributes,
 		MessageBody:       aws.String(req.Body),
 		QueueUrl:          aws.String(req.QueueURL),
 	})
@@ -46,7 +46,7 @@ func (s SQS) Send(ctx context.Context, req *cloud.SendRequest) (string, error) {
 		return "", fmt.Errorf("send: %w", err)
 	}
 
-	return *res.MessageId, nil
+	return *sendMessageOutput.MessageId, nil
 }
 
 func (s SQS) Receive(ctx context.Context, queueURL string, maxMsg int64) ([]*sqs.Message, error) {
@@ -61,7 +61,7 @@ func (s SQS) Receive(ctx context.Context, queueURL string, maxMsg int64) ([]*sqs
 	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(waitTimeSeconds+5))
 	defer cancel()
 
-	res, err := s.client.ReceiveMessageWithContext(ctx, &sqs.ReceiveMessageInput{
+	receiveMessageOutput, err := s.client.ReceiveMessageWithContext(ctx, &sqs.ReceiveMessageInput{
 		QueueUrl:              aws.String(queueURL),
 		MaxNumberOfMessages:   aws.Int64(maxMsg),
 		WaitTimeSeconds:       aws.Int64(waitTimeSeconds),
@@ -71,7 +71,7 @@ func (s SQS) Receive(ctx context.Context, queueURL string, maxMsg int64) ([]*sqs
 		return nil, fmt.Errorf("receive: %w", err)
 	}
 
-	return res.Messages, nil
+	return receiveMessageOutput.Messages, nil
 }
 
 func (s SQS) Delete(ctx context.Context, queueURL, rcvHandle string) error {
