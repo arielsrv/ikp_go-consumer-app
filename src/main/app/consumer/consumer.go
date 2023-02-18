@@ -2,6 +2,8 @@ package consumer
 
 import (
 	"context"
+	"encoding/json"
+	"github.com/src/main/app/clients"
 	"github.com/src/main/app/infrastructure/cloud"
 	"log"
 	"sync"
@@ -36,14 +38,16 @@ type Config struct {
 }
 
 type Consumer struct {
-	client cloud.MessageClient
-	config Config
+	messageClient cloud.MessageClient
+	httpClient    clients.Client
+	config        Config
 }
 
-func NewConsumer(client cloud.MessageClient, config Config) Consumer {
+func NewConsumer(messageClient cloud.MessageClient, httpClient clients.Client, config Config) Consumer {
 	return Consumer{
-		client: client,
-		config: config,
+		messageClient: messageClient,
+		httpClient:    httpClient,
+		config:        config,
 	}
 }
 
@@ -71,7 +75,7 @@ func (c Consumer) worker(ctx context.Context, wg *sync.WaitGroup, id int) {
 		default:
 		}
 
-		messages, err := c.client.Receive(ctx, c.config.QueueURL, int64(c.config.MaxMsg))
+		messages, err := c.messageClient.Receive(ctx, c.config.QueueURL, int64(c.config.MaxMsg))
 		if err != nil {
 			// Critical error!
 			log.Printf("worker %d: receive error: %s\n", id, err.Error())
@@ -110,10 +114,28 @@ func (c Consumer) async(ctx context.Context, messages []*sqs.Message) {
 	wg.Wait()
 }
 
+type AwsMessage struct {
+	Message string
+}
+
 func (c Consumer) consume(ctx context.Context, message *sqs.Message) {
-	log.Println(*message.Body)
-	if err := c.client.Delete(ctx, c.config.QueueURL, *message.ReceiptHandle); err != nil {
-		// Critical error!
-		log.Printf("delete error: %s\n", err.Error())
+	// log.Println(*message.Body)
+	var awsMessage AwsMessage
+	err := json.Unmarshal([]byte(*message.Body), &awsMessage)
+	if err != nil {
+		log.Printf("invalid message error: %s\n", err.Error())
+	} else {
+		requestBody := new(clients.RequestBody)
+		requestBody.Msg = awsMessage.Message
+		err = c.httpClient.PostMessage(requestBody)
+		if err != nil {
+			log.Printf("pusher error: %s\n", err.Error())
+		} else {
+			err = c.messageClient.Delete(ctx, c.config.QueueURL, *message.ReceiptHandle)
+			if err != nil {
+				// Critical error!
+				log.Printf("delete error: %s\n", err.Error())
+			}
+		}
 	}
 }

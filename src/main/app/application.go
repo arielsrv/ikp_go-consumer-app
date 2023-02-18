@@ -31,9 +31,6 @@ func Run() error {
 	pingService := services.NewPingService()
 	pingHandler := handlers.NewPingHandler(pingService)
 
-	targetAppClient := clients.NewClient(restClients.Get("target-app"))
-	log.Println(targetAppClient)
-
 	server.RegisterHandler(pingHandler)
 	server.Register(http.MethodGet, "/ping", server.Resolve[handlers.PingHandler]().Ping)
 
@@ -76,11 +73,14 @@ func consume() {
 		log.Fatalln(err)
 	}
 
-	// Instantiate client.
-	client := infrastructure.NewSQS(session, time.Second*5)
+	// Instantiate messageClient.
+	messageClient := infrastructure.NewSQS(session, time.Second*5)
+
+	// Instantiate httpClient.
+	httpClient := clients.NewClient(restClients.Get("target-app"))
 
 	// Instantiate consumer and start consuming.
-	consumer.NewConsumer(client, consumer.Config{
+	consumer.NewConsumer(messageClient, httpClient, consumer.Config{
 		Type:      consumer.AsyncConsumer,
 		QueueURL:  config.String("consumers.users.queue-url"),
 		MaxWorker: config.TryInt("consumers.users.max-workers", 2),

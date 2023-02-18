@@ -17,7 +17,7 @@ consumers:
 
 # target-app
 target-app:
-  endpoint: http://localhost:8080/users-consumer
+  endpoint: http://localhost:8000/users-consumer
 
 # rest-pools
 rest:

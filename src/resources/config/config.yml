@@ -1,2 +1,2 @@
 value: shared
-rest.client.target-app.baseUrl: https://localhost:8080
+rest.client.target-app.baseUrl: http://localhost:8080
