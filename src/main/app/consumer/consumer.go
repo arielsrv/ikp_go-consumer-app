@@ -123,18 +123,17 @@ func (c Consumer) consume(ctx context.Context, message *sqs.Message) {
 	var awsMessage AwsMessage
 	err := json.Unmarshal([]byte(*message.Body), &awsMessage)
 	if err != nil {
-		log.Printf("invalid message error: %s\n", err.Error())
+		log.Printf("invalid message error: %s, msg: %s\n", err.Error(), *message.Body)
 	} else {
 		requestBody := new(clients.RequestBody)
 		requestBody.Msg = awsMessage.Message
 		err = c.httpClient.PostMessage(requestBody)
 		if err != nil {
-			log.Printf("pusher error: %s\n", err.Error())
+			log.Printf("pusher error: %s, msg: %s\n", err.Error(), *message.Body)
 		} else {
 			err = c.messageClient.Delete(ctx, c.config.QueueURL, *message.ReceiptHandle)
 			if err != nil {
-				// Critical error!
-				log.Printf("delete error: %s\n", err.Error())
+				log.Printf("delete error: %s, msg: %s\n", err.Error(), *message.Body)
 			}
 		}
 	}
