@@ -119,7 +119,6 @@ type AwsMessage struct {
 }
 
 func (c Consumer) consume(ctx context.Context, message *sqs.Message) {
-	// log.Println(*message.Body)
 	var awsMessage AwsMessage
 	err := json.Unmarshal([]byte(*message.Body), &awsMessage)
 	if err != nil {
