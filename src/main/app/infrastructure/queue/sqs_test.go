@@ -28,7 +28,7 @@ func (m *MockSQS) SendMessage(in *sqs.SendMessageInput) (*sqs.SendMessageOutput,
 	})
 	return &sqs.SendMessageOutput{}, nil
 }
-func (m *MockSQS) ReceiveMessageWithContext(ctx aws.Context, in *sqs.ReceiveMessageInput, _ ...request.Option) (*sqs.ReceiveMessageOutput, error) {
+func (m *MockSQS) ReceiveMessageWithContext(_ aws.Context, in *sqs.ReceiveMessageInput, _ ...request.Option) (*sqs.ReceiveMessageOutput, error) {
 	if len(m.messages[*in.QueueUrl]) == 0 {
 		return &sqs.ReceiveMessageOutput{}, nil
 	}
@@ -42,10 +42,12 @@ func (m *MockSQS) ReceiveMessageWithContext(ctx aws.Context, in *sqs.ReceiveMess
 func TestNewClient(t *testing.T) {
 	q := getMockSQSClient()
 	queueURL := "https://queue.amazonaws.com/80398EXAMPLE/MyQueue"
-	q.SendMessage(&sqs.SendMessageInput{
+	output, err := q.SendMessage(&sqs.SendMessageInput{
 		MessageBody: aws.String("Hello, world!"),
 		QueueUrl:    &queueURL,
 	})
+	assert.NoError(t, err)
+	assert.NotNil(t, output)
 
 	queue := NewClient(time.Second*5, q)
 	message, err := queue.Receive(context.Background(), queueURL, 10)
