@@ -34,7 +34,9 @@ func (h HttpPusher) SendMessage(message *sqs.Message) error {
 	requestBody.Msg = messageDTO.Message
 	err = h.httpClient.PostMessage(requestBody)
 	if err != nil {
+		// @TODO: "h.metricCollector.IncrementCounter("consumer.app_name.pusher.errors")
 		return err
 	}
+	// @TODO: "h.metricCollector.IncrementCounter("consumer.app_name.pusher.ok")
 	return nil
 }
