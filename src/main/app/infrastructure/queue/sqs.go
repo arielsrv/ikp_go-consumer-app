@@ -3,7 +3,11 @@ package queue
 import (
 	"context"
 	"fmt"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"
+	properties "github.com/src/main/app/config"
+	"log"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -41,10 +45,43 @@ type MockClient struct {
 	messages map[string][]*sqs.Message
 }
 
-func NewClient(timeout time.Duration, client sqsiface.SQSAPI) Client {
+func NewClient(timeout time.Duration) Client {
+	session, err := session.NewSessionWithOptions(
+		session.Options{
+			Config: aws.Config{
+				Credentials: credentials.
+					NewStaticCredentials(
+						properties.String("aws.id"),
+						properties.String("aws.secret"), ""),
+				Region:           aws.String(properties.String("aws.region")),
+				Endpoint:         aws.String(properties.String("aws.url")),
+				S3ForcePathStyle: aws.Bool(true),
+			},
+			Profile: properties.String("aws.profile"),
+		},
+	)
+
+	if err != nil {
+		log.Fatalf("aws session error: %s", err)
+	}
+
 	return Client{
 		timeout: timeout,
-		SQSAPI:  client,
+		SQSAPI:  sqs.New(session),
+	}
+}
+
+type MockSQS struct {
+	sqsiface.SQSAPI
+	messages map[string][]*sqs.Message
+}
+
+func NewTestClient(timeout time.Duration) Client {
+	return Client{
+		timeout: timeout,
+		SQSAPI: &MockSQS{
+			messages: map[string][]*sqs.Message{},
+		},
 	}
 }
 

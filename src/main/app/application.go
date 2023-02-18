@@ -3,7 +3,6 @@ package app
 import (
 	"context"
 	"fmt"
-	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/src/main/app/consumer"
 	"github.com/src/main/app/infrastructure/queue"
 	"github.com/src/main/app/pusher"
@@ -62,22 +61,10 @@ func consume() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	// Create a session instance.
-	session, err := queue.New(queue.Config{
-		Address: config.String("aws.url"),
-		Region:  config.String("aws.region"),
-		Profile: config.String("aws.profile"),
-		ID:      config.String("aws.id"),
-		Secret:  config.String("aws.secret"),
-	})
-	if err != nil {
-		log.Fatalln(err)
-	}
-
 	httpClient := rest.NewClient(restClients.Get("target-app"))
 	httpPusher := pusher.NewHttpPusher(httpClient)
-	sqsClient := sqs.New(session)
-	queue := queue.NewClient(time.Second*5, sqsClient)
+
+	queue := queue.NewClient(time.Second * 5)
 
 	// Instantiate consumer and start consuming.
 	consumer.NewConsumer(queue, httpPusher, consumer.Config{

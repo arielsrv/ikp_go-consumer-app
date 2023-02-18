@@ -5,22 +5,10 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/sqs"
-	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
 )
-
-type MockSQS struct {
-	sqsiface.SQSAPI
-	messages map[string][]*sqs.Message
-}
-
-func getMockSQSClient() sqsiface.SQSAPI {
-	return &MockSQS{
-		messages: map[string][]*sqs.Message{},
-	}
-}
 
 func (m *MockSQS) SendMessage(in *sqs.SendMessageInput) (*sqs.SendMessageOutput, error) {
 	m.messages[*in.QueueUrl] = append(m.messages[*in.QueueUrl], &sqs.Message{
@@ -40,22 +28,22 @@ func (m *MockSQS) ReceiveMessageWithContext(_ aws.Context, in *sqs.ReceiveMessag
 }
 
 func TestNewClient(t *testing.T) {
-	q := getMockSQSClient()
-	queueURL := "https://queue.amazonaws.com/80398EXAMPLE/MyQueue"
-	output, err := q.SendMessage(&sqs.SendMessageInput{
+	queue := NewTestClient(time.Second * 5)
+
+	output, err := queue.SendMessage(&sqs.SendMessageInput{
 		MessageBody: aws.String("Hello, world!"),
-		QueueUrl:    &queueURL,
+		QueueUrl:    aws.String("https://queues.com/my-queue"),
 	})
+
 	assert.NoError(t, err)
 	assert.NotNil(t, output)
 
-	queue := NewClient(time.Second*5, q)
-	message, err := queue.Receive(context.Background(), queueURL, 10)
+	actual, err := queue.Receive(context.Background(), "https://queues.com/my-queue", 10)
 
 	assert.NoError(t, err)
-	assert.NotNil(t, message)
-	assert.Len(t, message, 1)
-	assert.NotNil(t, message[0])
-	assert.NotNil(t, message[0].Body)
-	assert.Equal(t, *message[0].Body, "Hello, world!")
+	assert.NotNil(t, actual)
+	assert.Len(t, actual, 1)
+	assert.NotNil(t, actual[0])
+	assert.NotNil(t, actual[0].Body)
+	assert.Equal(t, *actual[0].Body, "Hello, world!")
 }
