@@ -43,16 +43,17 @@ func TestNewClient(t *testing.T) {
 	q := getMockSQSClient()
 	queueURL := "https://queue.amazonaws.com/80398EXAMPLE/MyQueue"
 	q.SendMessage(&sqs.SendMessageInput{
-		MessageBody: aws.String("Hello, World!"),
+		MessageBody: aws.String("Hello, world!"),
 		QueueUrl:    &queueURL,
 	})
-	message, _ := q.ReceiveMessageWithContext(context.Background(), &sqs.ReceiveMessageInput{
-		QueueUrl: &queueURL,
-	})
-	assert.Equal(t, *message.Messages[0].Body, "Hello, World!")
 
-	queue := NewClient(time.Second*5, getMockSQSClient())
-	sendRequest := new(SendRequest)
-	sendRequest.Body = "hello world"
-	queue.Receive(context.Background(), queueURL, 10)
+	queue := NewClient(time.Second*5, q)
+	message, err := queue.Receive(context.Background(), queueURL, 10)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, message)
+	assert.Len(t, message, 1)
+	assert.NotNil(t, message[0])
+	assert.NotNil(t, message[0].Body)
+	assert.Equal(t, *message[0].Body, "Hello, world!")
 }
