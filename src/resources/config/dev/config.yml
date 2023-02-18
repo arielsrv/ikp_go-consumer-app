@@ -1,5 +1,6 @@
 app.env: dev
 
+# aws
 aws:
   url: http://localhost:4566
   id: development
@@ -7,16 +8,16 @@ aws:
   profile: default
   region: us-east-1
 
-topics:
-  users:
-    name: users-topic
-
+# consumers
 consumers:
   users:
-    name: users-consumer
     queue-url: http://localhost:4566/000000000000/users-consumer
     max-workers: 2
     max-messages: 10
+
+# target-app
+target-app:
+  endpoint: http://localhost:8080/users-consumer
 
 # rest-pools
 rest:
