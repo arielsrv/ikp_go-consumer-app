@@ -8,6 +8,7 @@ import (
 	"github.com/src/main/app/infrastructure"
 	"log"
 	"net/http"
+	"runtime"
 	"time"
 
 	"github.com/src/main/app/config"
@@ -81,9 +82,8 @@ func consume() {
 
 	// Instantiate consumer and start consuming.
 	consumer.NewConsumer(messageClient, httpClient, consumer.Config{
-		Type:      consumer.AsyncConsumer,
-		QueueURL:  config.String("consumers.users.queue-url"),
-		MaxWorker: config.TryInt("consumers.users.max-workers", 2),
-		MaxMsg:    config.TryInt("consumers.users.max-messages", 10),
+		QueueURL: config.String("consumers.users.queue-url"),
+		Workers:  config.TryInt("consumers.users.workers", runtime.NumCPU()-1),
+		MaxMsg:   config.TryInt("consumers.users.workers.messages", 10),
 	}).Start(ctx)
 }

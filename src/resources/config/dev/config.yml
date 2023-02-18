@@ -12,8 +12,6 @@ aws:
 consumers:
   users:
     queue-url: http://localhost:4566/000000000000/users-consumer
-    max-workers: 2
-    max-messages: 10
 
 # target-app
 target-app:
