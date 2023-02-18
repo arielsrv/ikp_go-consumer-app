@@ -3,6 +3,7 @@ package infrastructure
 import (
 	"context"
 	"fmt"
+	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -33,7 +34,7 @@ type Attribute struct {
 
 type SQS struct {
 	timeout time.Duration
-	client  *sqs.SQS
+	client  sqsiface.SQSAPI
 }
 
 func NewSQS(session *session.Session, timeout time.Duration) SQS {
