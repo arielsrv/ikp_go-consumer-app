@@ -8,6 +8,7 @@ import (
 	"github.com/src/main/app/config/env"
 	"github.com/src/main/app/metrics"
 	"github.com/src/main/app/rest"
+	"log"
 )
 
 type Pusher interface {
@@ -33,7 +34,8 @@ func (h HttpPusher) SendMessage(message *sqs.Message) error {
 	var messageDTO MessageDTO
 	err := json.Unmarshal([]byte(*message.Body), &messageDTO)
 	if err != nil {
-		return nil
+		log.Println(err)
+		return err
 	}
 
 	requestBody := new(rest.RequestBody)
