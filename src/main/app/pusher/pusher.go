@@ -37,6 +37,7 @@ func (h HttpPusher) SendMessage(message *sqs.Message) error {
 
 	requestBody := new(rest.RequestBody)
 	requestBody.Msg = messageDTO.Message
+
 	err = h.httpClient.PostMessage(requestBody)
 
 	if err != nil {
