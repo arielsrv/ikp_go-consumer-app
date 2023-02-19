@@ -27,17 +27,14 @@ func Run() error {
 
 	pingService := services.NewPingService()
 	pingHandler := handlers.NewPingHandler(pingService)
-
 	server.RegisterHandler(pingHandler)
 	server.Register(http.MethodGet, "/ping", server.Resolve[handlers.PingHandler]().Ping)
 
-	// Create a cancellable context.
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	httpClient := rest.NewHttpAppClient(restClients.Get("target-app"))
 	httpPusher := pusher.NewHttpPusher(httpClient)
-
 	queueClient := queue.NewClient(config.String("consumers.users.queue-url"))
 	consumer.NewConsumer(queueClient, httpPusher).Start(ctx)
 

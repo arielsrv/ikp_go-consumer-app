@@ -16,11 +16,8 @@ import (
 )
 
 type MessageClient interface {
-	// Send a message to queue and returns its message ID.
 	Send(ctx context.Context, sendRequest *SendRequest) (string, error)
-	// Receive Long polls given amount of messages from a queue.
 	Receive(ctx context.Context) ([]*sqs.Message, error)
-	// Delete Deletes a message from a queue.
 	Delete(ctx context.Context, receiptHandle string) error
 }
 
