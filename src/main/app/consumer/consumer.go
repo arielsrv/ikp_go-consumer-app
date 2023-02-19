@@ -11,12 +11,9 @@ import (
 )
 
 type Config struct {
-	// QueueClient URL to receive messages from.
 	QueueURL string
-	// Maximum workers that will independently receive messages from a queue.
-	Workers int
-	// Maximum messages that will be picked up by a worker in one-go.
-	MaxMsg int
+	Workers  int
+	MaxMsg   int
 }
 
 type Consumer struct {

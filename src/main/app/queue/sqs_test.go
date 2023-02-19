@@ -3,29 +3,11 @@ package queue
 import (
 	"context"
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
 )
-
-func (m *MockSQS) SendMessage(in *sqs.SendMessageInput) (*sqs.SendMessageOutput, error) {
-	m.messages[*in.QueueUrl] = append(m.messages[*in.QueueUrl], &sqs.Message{
-		Body: in.MessageBody,
-	})
-	return &sqs.SendMessageOutput{}, nil
-}
-func (m *MockSQS) ReceiveMessageWithContext(_ aws.Context, in *sqs.ReceiveMessageInput, _ ...request.Option) (*sqs.ReceiveMessageOutput, error) {
-	if len(m.messages[*in.QueueUrl]) == 0 {
-		return &sqs.ReceiveMessageOutput{}, nil
-	}
-	response := m.messages[*in.QueueUrl][0:1]
-	m.messages[*in.QueueUrl] = m.messages[*in.QueueUrl][1:]
-	return &sqs.ReceiveMessageOutput{
-		Messages: response,
-	}, nil
-}
 
 func TestNewClient(t *testing.T) {
 	queue := NewTestClient(time.Second * 5)

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"
 	properties "github.com/src/main/app/config"
@@ -83,6 +84,31 @@ func NewTestClient(timeout time.Duration) Client {
 			messages: map[string][]*sqs.Message{},
 		},
 	}
+}
+
+func (m *MockSQS) SendMessage(in *sqs.SendMessageInput) (*sqs.SendMessageOutput, error) {
+	m.messages[*in.QueueUrl] = append(m.messages[*in.QueueUrl], &sqs.Message{
+		Body:          in.MessageBody,
+		ReceiptHandle: aws.String("receipt-handle"),
+	})
+	return &sqs.SendMessageOutput{}, nil
+}
+func (m *MockSQS) ReceiveMessageWithContext(_ aws.Context, in *sqs.ReceiveMessageInput, _ ...request.Option) (*sqs.ReceiveMessageOutput, error) {
+	if len(m.messages[*in.QueueUrl]) == 0 {
+		return &sqs.ReceiveMessageOutput{}, nil
+	}
+	response := m.messages[*in.QueueUrl][0:1]
+	m.messages[*in.QueueUrl] = m.messages[*in.QueueUrl][1:]
+	return &sqs.ReceiveMessageOutput{
+		Messages: response,
+	}, nil
+}
+
+func (m *MockSQS) DeleteMessageWithContext(_ aws.Context, in *sqs.DeleteMessageInput, _ ...request.Option) (*sqs.DeleteMessageOutput, error) {
+	if len(m.messages[*in.QueueUrl]) == 0 {
+		return &sqs.DeleteMessageOutput{}, nil
+	}
+	return &sqs.DeleteMessageOutput{}, nil
 }
 
 func (s Client) Send(ctx context.Context, sendRequest *SendRequest) (string, error) {
