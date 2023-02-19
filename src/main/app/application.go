@@ -14,7 +14,6 @@ import (
 	"github.com/src/main/app/services"
 	"log"
 	"net/http"
-	"runtime"
 )
 
 var restClients = config.ProvideRestClients()
@@ -36,17 +35,11 @@ func Run() error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	httpClient := rest.NewClient(restClients.Get("target-app"))
+	httpClient := rest.NewHttpAppClient(restClients.Get("target-app"))
 	httpPusher := pusher.NewHttpPusher(httpClient)
 
-	queue := queue.NewClient()
-
-	// Instantiate consumer and start consuming.
-	consumer.NewConsumer(queue, httpPusher, consumer.Config{
-		QueueURL: config.String("consumers.users.queue-url"),
-		Workers:  config.TryInt("consumers.users.workers", runtime.NumCPU()-1),
-		MaxMsg:   config.TryInt("consumers.users.workers.messages", 10),
-	}).Start(ctx)
+	queueClient := queue.NewClient(config.String("consumers.users.queue-url"))
+	consumer.NewConsumer(queueClient, httpPusher).Start(ctx)
 
 	host := config.String("HOST")
 	if env.IsEmpty(host) && !env.IsDev() {

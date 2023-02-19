@@ -2,9 +2,11 @@ package consumer
 
 import (
 	"context"
+	"github.com/src/main/app/config"
 	"github.com/src/main/app/pusher"
 	"github.com/src/main/app/queue"
 	"log"
+	"runtime"
 	"sync"
 
 	"github.com/aws/aws-sdk-go/service/sqs"
@@ -22,11 +24,14 @@ type Consumer struct {
 	config        Config
 }
 
-func NewConsumer(messageClient queue.MessageClient, pusher pusher.Pusher, config Config) Consumer {
+func NewConsumer(messageClient queue.MessageClient, pusher pusher.Pusher) Consumer {
 	return Consumer{
 		messageClient: messageClient,
 		pusher:        pusher,
-		config:        config,
+		config: Config{
+			Workers: config.TryInt("consumers.users.workers", runtime.NumCPU()-1),
+			MaxMsg:  config.TryInt("consumers.users.workers.messages", 10),
+		},
 	}
 }
 
@@ -52,9 +57,9 @@ func (c Consumer) worker(ctx context.Context, wg *sync.WaitGroup, workerId int) 
 		default:
 		}
 
-		messages, err := c.messageClient.Receive(ctx, c.config.QueueURL, int64(c.config.MaxMsg))
+		messages, err := c.messageClient.Receive(ctx)
 		if err != nil {
-			// Critical error!
+			// Critical error
 			log.Printf("worker %d: receive error: %s\n", workerId, err.Error())
 			continue
 		}
@@ -84,7 +89,7 @@ func (c Consumer) pop(ctx context.Context, message *sqs.Message) {
 	if err != nil {
 		log.Printf("pusher error: %s, msg: %s\n", err.Error(), *message.Body)
 	} else {
-		err = c.messageClient.Delete(ctx, c.config.QueueURL, *message.ReceiptHandle)
+		err = c.messageClient.Delete(ctx, *message.ReceiptHandle)
 		if err != nil {
 			log.Printf("delete error: %s, msg: %s\n", err.Error(), *message.Body)
 		}

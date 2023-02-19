@@ -11,23 +11,23 @@ import (
 	"time"
 )
 
-type IHttpClient interface {
+type AppClient interface {
 	PostMessage(targetAppRequest *RequestBody) error
 }
 
-type Client struct {
+type HttpAppClient struct {
 	rb      *rest.RequestBuilder
 	baseURL string
 }
 
-func NewClient(rb *rest.RequestBuilder) Client {
-	return Client{
+func NewHttpAppClient(rb *rest.RequestBuilder) HttpAppClient {
+	return HttpAppClient{
 		rb:      rb,
 		baseURL: config.String("target-app.endpoint"),
 	}
 }
 
-func (c Client) PostMessage(requestBody *RequestBody) error {
+func (c HttpAppClient) PostMessage(requestBody *RequestBody) error {
 	startTime := time.Now()
 	response := c.rb.Post(c.baseURL, requestBody)
 	elapsed := time.Since(startTime)

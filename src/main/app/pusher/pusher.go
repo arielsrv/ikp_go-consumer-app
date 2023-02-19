@@ -16,7 +16,7 @@ type Pusher interface {
 }
 
 type HttpPusher struct {
-	httpClient rest.IHttpClient
+	httpClient rest.AppClient
 }
 
 type MessageDTO struct {
@@ -24,7 +24,7 @@ type MessageDTO struct {
 	Message string `json:"message,omitempty"`
 }
 
-func NewHttpPusher(httpClient rest.IHttpClient) *HttpPusher {
+func NewHttpPusher(httpClient rest.AppClient) *HttpPusher {
 	return &HttpPusher{
 		httpClient: httpClient,
 	}

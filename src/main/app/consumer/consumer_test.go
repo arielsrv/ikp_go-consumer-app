@@ -27,7 +27,7 @@ func TestNewConsumer(t *testing.T) {
 	httpPusher := new(MockPusher)
 	httpPusher.On("SendMessage").Return(nil)
 
-	queue := queue.NewTestClient(time.Second * 5)
+	queue := queue.NewTestClient(time.Second*5, "https://queues.com/my-queue")
 	output, err := queue.SendMessage(&sqs.SendMessageInput{
 		MessageBody: aws.String("Hello, world!"),
 		QueueUrl:    aws.String("https://queues.com/my-queue"),
@@ -35,11 +35,7 @@ func TestNewConsumer(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, output)
 
-	NewConsumer(queue, httpPusher, Config{
-		QueueURL: "https://queues.com/my-queue",
-		Workers:  1,
-		MaxMsg:   1,
-	}).Start(ctx)
+	NewConsumer(queue, httpPusher).Start(ctx)
 
 	receiveMessageOutput, err := queue.ReceiveMessageWithContext(ctx, &sqs.ReceiveMessageInput{
 		QueueUrl:              aws.String("https://queues.com/my-queue"),

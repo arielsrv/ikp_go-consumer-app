@@ -19,9 +19,9 @@ type MessageClient interface {
 	// Send a message to queue and returns its message ID.
 	Send(ctx context.Context, sendRequest *SendRequest) (string, error)
 	// Receive Long polls given amount of messages from a queue.
-	Receive(ctx context.Context, queueURL string, maxMsg int64) ([]*sqs.Message, error)
+	Receive(ctx context.Context) ([]*sqs.Message, error)
 	// Delete Deletes a message from a queue.
-	Delete(ctx context.Context, queueURL, receiptHandle string) error
+	Delete(ctx context.Context, receiptHandle string) error
 }
 
 type SendRequest struct {
@@ -39,6 +39,8 @@ type Attribute struct {
 type Client struct {
 	timeout time.Duration
 	sqsiface.SQSAPI
+	QueueUrl string
+	MaxMsg   int64
 }
 
 type MockClient struct {
@@ -46,7 +48,7 @@ type MockClient struct {
 	messages map[string][]*sqs.Message
 }
 
-func NewClient() Client {
+func NewClient(queueUrl string) Client {
 	session, err := session.NewSessionWithOptions(
 		session.Options{
 			Config: aws.Config{
@@ -66,9 +68,16 @@ func NewClient() Client {
 		log.Fatalf("aws session error: %s", err)
 	}
 
+	maxMsg := properties.TryInt("consumers.users.workers.messages", 10)
+	if maxMsg < 1 || maxMsg > 10 {
+		fmt.Errorf("receive argument: msgMax valid values: 1 to 10: given %d", maxMsg)
+	}
+
 	return Client{
-		timeout: time.Millisecond * time.Duration(properties.TryInt("context.timeout", 1000)),
-		SQSAPI:  sqs.New(session),
+		timeout:  time.Millisecond * time.Duration(properties.TryInt("context.timeout", 1000)),
+		SQSAPI:   sqs.New(session),
+		QueueUrl: queueUrl,
+		MaxMsg:   int64(maxMsg),
 	}
 }
 
@@ -77,12 +86,13 @@ type MockSQS struct {
 	messages map[string][]*sqs.Message
 }
 
-func NewTestClient(timeout time.Duration) Client {
+func NewTestClient(timeout time.Duration, queueUrl string) Client {
 	return Client{
 		timeout: timeout,
 		SQSAPI: &MockSQS{
 			messages: map[string][]*sqs.Message{},
 		},
+		QueueUrl: queueUrl,
 	}
 }
 
@@ -93,6 +103,7 @@ func (m *MockSQS) SendMessage(in *sqs.SendMessageInput) (*sqs.SendMessageOutput,
 	})
 	return &sqs.SendMessageOutput{}, nil
 }
+
 func (m *MockSQS) ReceiveMessageWithContext(_ aws.Context, in *sqs.ReceiveMessageInput, _ ...request.Option) (*sqs.ReceiveMessageOutput, error) {
 	if len(m.messages[*in.QueueUrl]) == 0 {
 		return &sqs.ReceiveMessageOutput{}, nil
@@ -135,11 +146,7 @@ func (s Client) Send(ctx context.Context, sendRequest *SendRequest) (string, err
 	return *sendMessageOutput.MessageId, nil
 }
 
-func (s Client) Receive(ctx context.Context, queueURL string, maxMsg int64) ([]*sqs.Message, error) {
-	if maxMsg < 1 || maxMsg > 10 {
-		return nil, fmt.Errorf("receive argument: msgMax valid values: 1 to 10: given %d", maxMsg)
-	}
-
+func (s Client) Receive(ctx context.Context) ([]*sqs.Message, error) {
 	var waitTimeSeconds int64 = 10
 
 	// Must always be above `WaitTimeSeconds` otherwise `ReceiveMessageWithContext`
@@ -148,8 +155,8 @@ func (s Client) Receive(ctx context.Context, queueURL string, maxMsg int64) ([]*
 	defer cancel()
 
 	receiveMessageOutput, err := s.ReceiveMessageWithContext(ctx, &sqs.ReceiveMessageInput{
-		QueueUrl:              aws.String(queueURL),
-		MaxNumberOfMessages:   aws.Int64(maxMsg),
+		QueueUrl:              aws.String(s.QueueUrl),
+		MaxNumberOfMessages:   aws.Int64(s.MaxMsg),
 		WaitTimeSeconds:       aws.Int64(waitTimeSeconds),
 		MessageAttributeNames: aws.StringSlice([]string{"All"}),
 	})
@@ -160,12 +167,12 @@ func (s Client) Receive(ctx context.Context, queueURL string, maxMsg int64) ([]*
 	return receiveMessageOutput.Messages, nil
 }
 
-func (s Client) Delete(ctx context.Context, queueURL, receiptHandle string) error {
+func (s Client) Delete(ctx context.Context, receiptHandle string) error {
 	ctx, cancel := context.WithTimeout(ctx, s.timeout)
 	defer cancel()
 
 	if _, err := s.DeleteMessageWithContext(ctx, &sqs.DeleteMessageInput{
-		QueueUrl:      aws.String(queueURL),
+		QueueUrl:      aws.String(s.QueueUrl),
 		ReceiptHandle: aws.String(receiptHandle),
 	}); err != nil {
 		return fmt.Errorf("delete: %w", err)

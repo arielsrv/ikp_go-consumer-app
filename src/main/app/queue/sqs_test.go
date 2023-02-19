@@ -10,7 +10,7 @@ import (
 )
 
 func TestNewClient(t *testing.T) {
-	queue := NewTestClient(time.Second * 5)
+	queue := NewTestClient(time.Second*5, "https://queues.com/my-queue")
 
 	output, err := queue.SendMessage(&sqs.SendMessageInput{
 		MessageBody: aws.String("Hello, world!"),
@@ -20,7 +20,7 @@ func TestNewClient(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, output)
 
-	actual, err := queue.Receive(context.Background(), "https://queues.com/my-queue", 10)
+	actual, err := queue.Receive(context.Background())
 
 	assert.NoError(t, err)
 	assert.NotNil(t, actual)
