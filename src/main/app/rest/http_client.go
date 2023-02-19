@@ -32,14 +32,6 @@ func (c HttpAppClient) PostMessage(requestBody *RequestBody) error {
 
 	metrics.Collector.RecordExecutionTime("consumers.pusher.http.time", elapsed.Milliseconds())
 
-	if response.Err != nil {
-		return response.Err
-	}
-
-	if response.StatusCode != http.StatusOK {
-		return fiber.NewError(response.StatusCode, response.String())
-	}
-
 	if response.StatusCode >= 200 && response.StatusCode < 300 {
 		metrics.Collector.IncrementCounter("consumers.pusher.http.20x")
 	} else {
@@ -50,6 +42,10 @@ func (c HttpAppClient) PostMessage(requestBody *RequestBody) error {
 				metrics.Collector.IncrementCounter("consumers.pusher.http.50x")
 			}
 		}
+	}
+
+	if response.StatusCode != http.StatusOK {
+		return fiber.NewError(response.StatusCode, response.String())
 	}
 
 	return nil

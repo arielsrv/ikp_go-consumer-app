@@ -97,8 +97,6 @@ func newMetricsCollector() *metricsCollector {
 	prometheus.MustRegister(generic)
 	genericCounter = generic
 
-	generic.WithLabelValues("item_status_paused").Add(1)
-
 	return &metricsCollector{}
 }
 
