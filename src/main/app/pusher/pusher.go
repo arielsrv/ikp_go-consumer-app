@@ -42,6 +42,8 @@ func (h HttpPusher) SendMessage(message *sqs.Message) error {
 	requestBody.Id = messageDTO.Id
 	requestBody.Msg = messageDTO.Message
 
+	log.Printf("message - id: %s, body: %s", requestBody.Id, requestBody.Msg)
+
 	err = h.httpClient.PostMessage(requestBody)
 
 	if err != nil {
