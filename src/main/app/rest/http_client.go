@@ -65,5 +65,6 @@ func (c Client) PostMessage(requestBody *RequestBody) error {
 }
 
 type RequestBody struct {
+	Id  string `json:"id,omitempty"`
 	Msg string `json:"msg,omitempty"`
 }

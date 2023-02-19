@@ -19,7 +19,8 @@ type HttpPusher struct {
 }
 
 type MessageDTO struct {
-	Message string
+	Id      string `json:"MessageId,omitempty"`
+	Message string `json:"message,omitempty"`
 }
 
 func NewHttpPusher(httpClient rest.IHttpClient) *HttpPusher {
@@ -36,6 +37,7 @@ func (h HttpPusher) SendMessage(message *sqs.Message) error {
 	}
 
 	requestBody := new(rest.RequestBody)
+	requestBody.Id = messageDTO.Id
 	requestBody.Msg = messageDTO.Message
 
 	err = h.httpClient.PostMessage(requestBody)
