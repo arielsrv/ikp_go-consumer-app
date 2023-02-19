@@ -63,9 +63,11 @@ TODO
 
 ### Metrics
 
-TODO
+Explanation
 
 #### Pusher dashboard
+
+TODO Pusher Success, Pusher Errors, HTTP Time, 20x, 40x, 50x
 
 ### Contributors
 
