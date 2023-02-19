@@ -65,12 +65,12 @@ func (c Consumer) worker(ctx context.Context, wg *sync.WaitGroup, workerId int) 
 		}
 
 		if len(messages) != 0 {
-			c.asyncPop(ctx, messages)
+			c.iterateAndPopAsync(ctx, messages)
 		}
 	}
 }
 
-func (c Consumer) asyncPop(ctx context.Context, messages []*sqs.Message) {
+func (c Consumer) iterateAndPopAsync(ctx context.Context, messages []*sqs.Message) {
 	wg := &sync.WaitGroup{}
 	wg.Add(len(messages))
 
