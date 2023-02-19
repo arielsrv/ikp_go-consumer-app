@@ -2,8 +2,18 @@
 
 The intent of the project is to provide a lightweight microservice sdk, based on Golang
 
-The main goal is to provide a modular framework with high level abstractions, which enforces best
+The main goal is to provide a modular framework with high level abstractions to receive messages in
+any technology, which enforces best
 practices
+
+You don't need to know how to handle messages in Amazon SQS. You only need to know HTTP protocol.
+
+```
+Send message ──> Topic (Amazon SNS)
+                └──> Consumer (Amazon SNS) 
+                    └──> Pusher (HTTP Client) 
+                        └──> Your API (HTTP endpoint to receive messages)
+```
 
 ## Table of contents
 
