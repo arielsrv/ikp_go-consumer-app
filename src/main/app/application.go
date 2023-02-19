@@ -23,6 +23,7 @@ func Run() error {
 		Recovery:  true,
 		RequestID: true,
 		Logger:    true,
+		Metrics:   true,
 	})
 
 	pingService := services.NewPingService()
@@ -36,7 +37,7 @@ func Run() error {
 	httpClient := rest.NewHttpAppClient(restClients.Get("target-app"))
 	httpPusher := pusher.NewHttpPusher(httpClient)
 	queueClient := queue.NewClient(config.String("consumers.users.queue-url"))
-	consumer.NewConsumer(queueClient, httpPusher).Start(ctx)
+	go consumer.NewConsumer(queueClient, httpPusher).Start(ctx)
 
 	host := config.String("HOST")
 	if env.IsEmpty(host) && !env.IsDev() {
@@ -54,6 +55,9 @@ func Run() error {
 
 	log.Printf("Listening on port %s", port)
 	log.Printf("Open http://%s:%s/ping in the browser", host, port)
+
+	// httpReqs.WithLabelValues("404", "POST").Add(42)
+	// httpReqs.WithLabelValues("301", "PATCH").Add(123)
 
 	return app.Start(address)
 }

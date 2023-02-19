@@ -2,10 +2,7 @@ package pusher
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/aws/aws-sdk-go/service/sqs"
-	"github.com/src/main/app/config"
-	"github.com/src/main/app/config/env"
 	"github.com/src/main/app/metrics"
 	"github.com/src/main/app/rest"
 	"log"
@@ -47,15 +44,11 @@ func (h HttpPusher) SendMessage(message *sqs.Message) error {
 	err = h.httpClient.PostMessage(requestBody)
 
 	if err != nil {
-		metrics.Collector.IncrementCounter("consumers.pusher.errors",
-			fmt.Sprintf("name: %s", config.String("app.name")),
-			fmt.Sprintf("scope: %s", env.GetScope()))
+		metrics.Collector.IncrementCounter("consumers.pusher.errors")
 		return err
 	}
 
-	metrics.Collector.IncrementCounter("consumers.pusher.success",
-		fmt.Sprintf("name: %s", config.String("app.name")),
-		fmt.Sprintf("scope: %s", env.GetScope()))
+	metrics.Collector.IncrementCounter("consumers.pusher.success")
 
 	return nil
 }

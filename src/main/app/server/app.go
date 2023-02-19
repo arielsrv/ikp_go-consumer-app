@@ -16,6 +16,7 @@ import (
 
 	"github.com/src/main/app/server/errors"
 
+	"github.com/ansrivas/fiberprometheus/v2"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
@@ -116,6 +117,12 @@ func New(config ...Config) *App {
 		}
 	}
 
+	if app.config.Metrics {
+		prometheus := fiberprometheus.New(properties.String("app.name"))
+		prometheus.RegisterAt(app, "/metrics")
+		app.Use(prometheus.Middleware)
+	}
+
 	return app
 }
 
@@ -126,6 +133,7 @@ type Config struct {
 	Logger    bool
 	Cors      bool
 	NewRelic  bool
+	Metrics   bool
 }
 
 func Register(verb string, path string, action func(ctx *fiber.Ctx) error) {
