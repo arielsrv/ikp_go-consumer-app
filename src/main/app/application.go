@@ -56,8 +56,5 @@ func Run() error {
 	log.Printf("Listening on port %s", port)
 	log.Printf("Open http://%s:%s/ping in the browser", host, port)
 
-	// httpReqs.WithLabelValues("404", "POST").Add(42)
-	// httpReqs.WithLabelValues("301", "PATCH").Add(123)
-
 	return app.Start(address)
 }
