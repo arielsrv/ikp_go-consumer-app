@@ -46,7 +46,7 @@ type MockClient struct {
 	messages map[string][]*sqs.Message
 }
 
-func NewClient(timeout time.Duration) Client {
+func NewClient() Client {
 	session, err := session.NewSessionWithOptions(
 		session.Options{
 			Config: aws.Config{
@@ -67,7 +67,7 @@ func NewClient(timeout time.Duration) Client {
 	}
 
 	return Client{
-		timeout: timeout,
+		timeout: time.Millisecond * time.Duration(properties.TryInt("context.timeout", 1000)),
 		SQSAPI:  sqs.New(session),
 	}
 }

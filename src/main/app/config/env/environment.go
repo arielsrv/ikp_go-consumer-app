@@ -25,6 +25,12 @@ func GetScope() string {
 	return strings.ToLower(os.Getenv("SCOPE"))
 }
 
+// GetAppName GetScope
+// Get scope variable from System. Example for test.pets-api.internal.com is test.
+func GetAppName() string {
+	return strings.ToLower(os.Getenv("app.name"))
+}
+
 // GetEnv
 // * Get environment name from System. Priority order is as follows:
 // * 1. It looks in "app.env" system property.

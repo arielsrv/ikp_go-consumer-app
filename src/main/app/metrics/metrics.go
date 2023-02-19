@@ -4,9 +4,11 @@ type IMetricCollector interface {
 	IncrementCounter(tag string)
 }
 
-type MetricCollector struct {
+var Collector = &metricsCollector{}
+
+type metricsCollector struct {
 }
 
-func (m MetricCollector) IncrementCounter(tag string) {
-	// @TODO: increment metric for delivery notifications
+func (m metricsCollector) IncrementCounter(name string, tags ...string) {
+	// @TODO invoke real metric collector
 }

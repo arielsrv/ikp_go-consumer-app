@@ -3,20 +3,18 @@ package app
 import (
 	"context"
 	"fmt"
+	"github.com/src/main/app/config"
+	"github.com/src/main/app/config/env"
 	"github.com/src/main/app/consumer"
+	"github.com/src/main/app/handlers"
 	"github.com/src/main/app/pusher"
 	"github.com/src/main/app/queue"
 	"github.com/src/main/app/rest"
+	"github.com/src/main/app/server"
+	"github.com/src/main/app/services"
 	"log"
 	"net/http"
 	"runtime"
-	"time"
-
-	"github.com/src/main/app/config"
-	"github.com/src/main/app/config/env"
-	"github.com/src/main/app/handlers"
-	"github.com/src/main/app/server"
-	"github.com/src/main/app/services"
 )
 
 var restClients = config.ProvideRestClients()
@@ -34,7 +32,21 @@ func Run() error {
 	server.RegisterHandler(pingHandler)
 	server.Register(http.MethodGet, "/ping", server.Resolve[handlers.PingHandler]().Ping)
 
-	go consume()
+	// Create a cancellable context.
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	httpClient := rest.NewClient(restClients.Get("target-app"))
+	httpPusher := pusher.NewHttpPusher(httpClient)
+
+	queue := queue.NewClient()
+
+	// Instantiate consumer and start consuming.
+	consumer.NewConsumer(queue, httpPusher, consumer.Config{
+		QueueURL: config.String("consumers.users.queue-url"),
+		Workers:  config.TryInt("consumers.users.workers", runtime.NumCPU()-1),
+		MaxMsg:   config.TryInt("consumers.users.workers.messages", 10),
+	}).Start(ctx)
 
 	host := config.String("HOST")
 	if env.IsEmpty(host) && !env.IsDev() {
@@ -54,22 +66,4 @@ func Run() error {
 	log.Printf("Open http://%s:%s/ping in the browser", host, port)
 
 	return app.Start(address)
-}
-
-func consume() {
-	// Create a cancellable context.
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	httpClient := rest.NewClient(restClients.Get("target-app"))
-	httpPusher := pusher.NewHttpPusher(httpClient)
-
-	queue := queue.NewClient(time.Second * 5)
-
-	// Instantiate consumer and start consuming.
-	consumer.NewConsumer(queue, httpPusher, consumer.Config{
-		QueueURL: config.String("consumers.users.queue-url"),
-		Workers:  config.TryInt("consumers.users.workers", runtime.NumCPU()-1),
-		MaxMsg:   config.TryInt("consumers.users.workers.messages", 10),
-	}).Start(ctx)
 }

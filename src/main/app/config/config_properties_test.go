@@ -9,8 +9,8 @@ import (
 )
 
 func TestGetProperty(t *testing.T) {
-	actual := config.String("value")
-	assert.Equal(t, "shared", actual)
+	actual := config.String("app.name")
+	assert.Equal(t, "go-consumer-app", actual)
 }
 
 func TestGetProperty_Err(t *testing.T) {
