@@ -72,8 +72,10 @@ consumers:
 
 ### Pusher
 
+Your app to receive messages. Example: my.app/news. Must allow POST Http Request in
+Application/json.
+
 ```
-Your app to receive messages. Example: my.app/news. Must allow POST Http Request in Application/json.
 POST my.app/news
 Content-Type: application/json
 ```
