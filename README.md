@@ -131,14 +131,10 @@ func (c HttpAppClient) PostMessage(requestBody *RequestBody) error {
 
 	if response.StatusCode >= 200 && response.StatusCode < 300 {
 		metrics.Collector.IncrementCounter("consumers.pusher.http.20x")
-	} else {
-		if response.StatusCode >= 400 && response.StatusCode < 500 {
-			metrics.Collector.IncrementCounter("consumers.pusher.http.40x")
-		} else {
-			if response.StatusCode >= 500 {
-				metrics.Collector.IncrementCounter("consumers.pusher.http.50x")
-			}
-		}
+	} else if response.StatusCode >= 400 && response.StatusCode < 500 {
+		metrics.Collector.IncrementCounter("consumers.pusher.http.40x")
+	} else if response.StatusCode >= 500 {
+		metrics.Collector.IncrementCounter("consumers.pusher.http.50x")
 	}
 
 	if response.StatusCode != http.StatusOK {
@@ -147,7 +143,6 @@ func (c HttpAppClient) PostMessage(requestBody *RequestBody) error {
 
 	return nil
 }
-
 ```
 
 ### Metrics
