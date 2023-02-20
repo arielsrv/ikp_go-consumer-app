@@ -2,9 +2,9 @@ package rest
 
 import (
 	"github.com/arielsrv/ikp_go-restclient/rest"
-	"github.com/gofiber/fiber/v2"
 	"github.com/src/main/app/config"
 	"github.com/src/main/app/metrics"
+	"github.com/src/main/app/server/errors"
 	"net/http"
 	"time"
 )
@@ -46,7 +46,7 @@ func (c HttpAppClient) PostMessage(requestBody *RequestBody) error {
 	}
 
 	if response.StatusCode != http.StatusOK {
-		return fiber.NewError(response.StatusCode, response.String())
+		return errors.NewError(response.StatusCode, response.String())
 	}
 
 	return nil
