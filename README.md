@@ -155,9 +155,9 @@ Explanation
 ```
 consumers_pusher_success: messages that were sent and confirmed successfully
 consumers_pusher_errors: messages that weren't sent or confirmed successfully
-consumers.pusher.http.20x: messages that were sent and confirmed successfully
-consumers.pusher.http.40x: messages that weren't sent or confirmed successfully
-consumers.pusher.http.50x: messages that weren't sent or confirmed successfully
+consumers_pusher_http_20x: messages that were sent and confirmed successfully
+consumers_pusher_http_40x: messages that weren't sent or confirmed successfully
+consumers_pusher_http_50x: messages that weren't sent or confirmed successfully
 consumers_pusher_http_time: delivery time, remember configure your rest client correctly
 ```
 
