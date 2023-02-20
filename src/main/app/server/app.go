@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/arielsrv/nrfiber"
 	"github.com/newrelic/go-agent/v3/newrelic"
-	"log"
+	"github.com/src/main/app/log"
 	"net/http"
 	"os"
 	"reflect"
@@ -94,7 +94,7 @@ func New(config ...Config) *App {
 		} else {
 			app.Add(http.MethodGet, "/swagger/*", swagger.HandlerDefault)
 		}
-		log.Println("Swagger enabled")
+		log.Info("Swagger enabled")
 	}
 
 	if app.config.NewRelic && !env.IsDev() {
@@ -113,7 +113,7 @@ func New(config ...Config) *App {
 				NewRelicApp: nrApp,
 			}))
 		} else {
-			log.Println("newrelic disabled, newrelic license key not found")
+			log.Info("newrelic disabled, newrelic license key not found")
 		}
 	}
 

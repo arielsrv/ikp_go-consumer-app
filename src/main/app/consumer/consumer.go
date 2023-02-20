@@ -3,9 +3,9 @@ package consumer
 import (
 	"context"
 	"github.com/src/main/app/config"
+	"github.com/src/main/app/log"
 	"github.com/src/main/app/pusher"
 	"github.com/src/main/app/queue"
-	"log"
 	"runtime"
 	"sync"
 
@@ -52,7 +52,7 @@ func (c Consumer) worker(ctx context.Context, wg *sync.WaitGroup, workerId int) 
 	for {
 		select {
 		case <-ctx.Done():
-			log.Printf("worker %d: stopped\n", workerId)
+			log.Infof("worker %d: stopped\n", workerId)
 			return
 		default:
 		}
@@ -60,7 +60,7 @@ func (c Consumer) worker(ctx context.Context, wg *sync.WaitGroup, workerId int) 
 		messages, err := c.messageClient.Receive(ctx)
 		if err != nil {
 			// Critical error
-			log.Printf("worker %d: receive error: %s\n", workerId, err.Error())
+			log.Errorf("worker %d: receive error: %s\n", workerId, err.Error())
 			continue
 		}
 
@@ -87,11 +87,11 @@ func (c Consumer) iterateAndPopAsync(ctx context.Context, messages []*sqs.Messag
 func (c Consumer) pop(ctx context.Context, message *sqs.Message) {
 	err := c.pusher.SendMessage(message)
 	if err != nil {
-		log.Printf("pusher error: %s, msg: %s\n", err.Error(), *message.Body)
+		log.Errorf("pusher error: %s, msg: %s\n", err.Error(), *message.Body)
 	} else {
 		err = c.messageClient.Delete(ctx, *message.ReceiptHandle)
 		if err != nil {
-			log.Printf("delete error: %s, msg: %s\n", err.Error(), *message.Body)
+			log.Errorf("delete error: %s, msg: %s\n", err.Error(), *message.Body)
 		}
 	}
 }

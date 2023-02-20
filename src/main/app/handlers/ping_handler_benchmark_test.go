@@ -1,7 +1,7 @@
 package handlers_test
 
 import (
-	"log"
+	"github.com/src/main/app/log"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
@@ -26,7 +26,7 @@ func BenchmarkPingHandler_Ping(b *testing.B) {
 		request := httptest.NewRequest(http.MethodGet, "/ping", nil)
 		response, err := app.Test(request)
 		if err != nil || response.StatusCode != http.StatusOK {
-			log.Print("f[" + strconv.Itoa(i) + "] Status != OK (200)")
+			log.Infof("f[" + strconv.Itoa(i) + "] Status != OK (200)")
 		}
 	}
 }

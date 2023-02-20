@@ -2,8 +2,8 @@ package main
 
 import (
 	"github.com/src/main/app"
+	"github.com/src/main/app/log"
 	_ "github.com/src/resources/docs"
-	"log"
 )
 
 // @title Golang Template API

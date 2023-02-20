@@ -7,12 +7,12 @@ import (
 	"github.com/src/main/app/config/env"
 	"github.com/src/main/app/consumer"
 	"github.com/src/main/app/handlers"
+	"github.com/src/main/app/log"
 	"github.com/src/main/app/pusher"
 	"github.com/src/main/app/queue"
 	"github.com/src/main/app/rest"
 	"github.com/src/main/app/server"
 	"github.com/src/main/app/services"
-	"log"
 	"net/http"
 )
 
@@ -53,8 +53,8 @@ func Run() error {
 
 	address := fmt.Sprintf("%s:%s", host, port)
 
-	log.Printf("Listening on port %s", port)
-	log.Printf("Open http://%s:%s/ping in the browser", host, port)
+	log.Infof("Listening on port %s", port)
+	log.Infof("Open http://%s:%s/ping in the browser", host, port)
 
 	return app.Start(address)
 }

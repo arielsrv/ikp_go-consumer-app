@@ -3,7 +3,7 @@ package metrics
 import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/src/main/app/config"
-	"log"
+	"github.com/src/main/app/log"
 )
 
 type IMetricCollector interface {
@@ -113,6 +113,6 @@ func (m metricsCollector) RecordExecutionTime(name string, value int64) {
 	if summary, ok := summaries[name]; ok {
 		summary.Observe(float64(value))
 	} else {
-		log.Printf("missing metric collector: %s", name)
+		log.Infof("missing metric collector: %s", name)
 	}
 }

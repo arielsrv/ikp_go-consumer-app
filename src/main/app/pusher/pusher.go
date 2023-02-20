@@ -3,9 +3,9 @@ package pusher
 import (
 	"encoding/json"
 	"github.com/aws/aws-sdk-go/service/sqs"
+	"github.com/src/main/app/log"
 	"github.com/src/main/app/metrics"
 	"github.com/src/main/app/rest"
-	"log"
 )
 
 type Pusher interface {
@@ -31,7 +31,7 @@ func (h HttpPusher) SendMessage(message *sqs.Message) error {
 	var messageDTO MessageDTO
 	err := json.Unmarshal([]byte(*message.Body), &messageDTO)
 	if err != nil {
-		log.Println(err)
+		log.Error(err)
 		return err
 	}
 
@@ -39,7 +39,7 @@ func (h HttpPusher) SendMessage(message *sqs.Message) error {
 	requestBody.Id = messageDTO.Id
 	requestBody.Msg = messageDTO.Message
 
-	log.Printf("message - id: %s, body: %s", requestBody.Id, requestBody.Msg)
+	log.Infof("message - id: %s, body: %s", requestBody.Id, requestBody.Msg)
 
 	err = h.httpClient.PostMessage(requestBody)
 

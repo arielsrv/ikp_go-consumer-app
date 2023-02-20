@@ -8,7 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"
 	properties "github.com/src/main/app/config"
-	"log"
+	"github.com/src/main/app/log"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"

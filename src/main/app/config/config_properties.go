@@ -2,7 +2,7 @@ package config
 
 import (
 	"fmt"
-	"log"
+	"github.com/src/main/app/log"
 	"os"
 	"path"
 	"runtime"
@@ -21,7 +21,7 @@ const (
 
 func init() {
 	showWd()
-	log.Println("INFO: trying to load config ...")
+	log.Info("INFO: trying to load config ...")
 	_, caller, _, _ := runtime.Caller(0)
 	root := path.Join(path.Dir(caller), "../../..")
 	err := os.Chdir(root)
@@ -29,7 +29,7 @@ func init() {
 		showWd()
 		wd, wdErr := os.Getwd()
 		if wdErr != nil {
-			log.Fatalln(err)
+			log.Fatal(wdErr)
 		}
 		root = path.Join(wd, "/src")
 	}
@@ -65,15 +65,15 @@ func init() {
 		log.Fatal(err)
 	}
 
-	log.Printf("INFO: ENV: %s, SCOPE: %s", environment, scope)
+	log.Infof("INFO: ENV: %s, SCOPE: %s", environment, scope)
 }
 
 func showWd() {
 	wd, err := os.Getwd()
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatal(err)
 	}
-	log.Print("INFO: working directory: " + wd)
+	log.Info("INFO: working directory: " + wd)
 }
 
 func String(key string) string {

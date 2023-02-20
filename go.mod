@@ -4,6 +4,7 @@ go 1.20
 
 require (
 	github.com/ansrivas/fiberprometheus/v2 v2.6.0
+	github.com/antonfisher/nested-logrus-formatter v1.3.1
 	github.com/arielsrv/ikp_go-restclient v0.0.2
 	github.com/arielsrv/nrfiber v0.0.2
 	github.com/aws/aws-sdk-go v1.44.204
@@ -12,6 +13,7 @@ require (
 	github.com/gofiber/swagger v0.1.9
 	github.com/newrelic/go-agent/v3 v3.20.3
 	github.com/prometheus/client_golang v1.14.0
+	github.com/sirupsen/logrus v1.7.0
 	github.com/stretchr/testify v1.8.1
 	github.com/swaggo/swag v1.8.10
 	github.com/valyala/fasthttp v1.44.0
