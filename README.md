@@ -15,7 +15,7 @@ Send message ──> Topic (Amazon SNS)
                         └──> Your API (HTTP endpoint to receive messages)
 ```
 
-<img width="1207" alt="image" src="https://user-images.githubusercontent.com/760657/220051182-0dced13a-5655-4de6-bf89-d9e034a07afe.png">
+<img width="1211" alt="image" src="https://user-images.githubusercontent.com/760657/220067058-3f86739d-eaa5-49fd-9000-663d99f81642.png">
 
 ## Table of contents
 
