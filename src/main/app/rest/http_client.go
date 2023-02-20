@@ -30,7 +30,8 @@ func (c HttpAppClient) PostMessage(requestBody *RequestBody) error {
 	response := c.rb.Post(c.baseURL, requestBody)
 	elapsedTime := time.Since(startTime)
 
-	metrics.Collector.RecordExecutionTime("consumers.pusher.http.time", elapsedTime.Milliseconds())
+	metrics.Collector.
+		RecordExecutionTime("consumers.pusher.http.time", elapsedTime.Milliseconds())
 
 	if response.Err != nil {
 		return response.Err
