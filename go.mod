@@ -13,7 +13,7 @@ require (
 	github.com/gofiber/swagger v0.1.9
 	github.com/newrelic/go-agent/v3 v3.20.3
 	github.com/prometheus/client_golang v1.14.0
-	github.com/sirupsen/logrus v1.7.0
+	github.com/sirupsen/logrus v1.9.0
 	github.com/stretchr/testify v1.8.1
 	github.com/swaggo/swag v1.8.10
 	github.com/valyala/fasthttp v1.44.0
