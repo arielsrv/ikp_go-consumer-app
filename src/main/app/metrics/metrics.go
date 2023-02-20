@@ -15,18 +15,19 @@ var Collector = newMetricsCollector()
 var counters = make(map[string]prometheus.Counter)
 var summaries = make(map[string]prometheus.Summary)
 var genericCounter *prometheus.CounterVec
+var namespace = "consumers"
+var labels = prometheus.Labels{"env": config.String("app.env"), "app": config.String("app.name")}
 
 type metricsCollector struct {
 }
 
 func newMetricsCollector() *metricsCollector {
-
 	success := prometheus.NewCounter(
 		prometheus.CounterOpts{
-			Namespace:   "consumers",
+			Namespace:   namespace,
 			Name:        "consumers_pusher_success",
 			Help:        "How many messages processed.",
-			ConstLabels: prometheus.Labels{"env": config.String("app.env"), "app": config.String("app.name")},
+			ConstLabels: labels,
 		},
 	)
 	prometheus.MustRegister(success)
@@ -34,10 +35,10 @@ func newMetricsCollector() *metricsCollector {
 
 	errors := prometheus.NewCounter(
 		prometheus.CounterOpts{
-			Namespace:   "consumers",
+			Namespace:   namespace,
 			Name:        "consumers_pusher_error",
 			Help:        "How many messages can't be processed.",
-			ConstLabels: prometheus.Labels{"env": config.String("app.env"), "app": config.String("app.name")},
+			ConstLabels: labels,
 		},
 	)
 	prometheus.MustRegister(errors)
@@ -45,10 +46,10 @@ func newMetricsCollector() *metricsCollector {
 
 	pusher20x := prometheus.NewCounter(
 		prometheus.CounterOpts{
-			Namespace:   "consumers",
+			Namespace:   namespace,
 			Name:        "consumers_pusher_http_200",
 			Help:        "How many ACK.",
-			ConstLabels: prometheus.Labels{"env": config.String("app.env"), "app": config.String("app.name")},
+			ConstLabels: labels,
 		},
 	)
 	prometheus.MustRegister(pusher20x)
@@ -56,10 +57,10 @@ func newMetricsCollector() *metricsCollector {
 
 	pusher40x := prometheus.NewCounter(
 		prometheus.CounterOpts{
-			Namespace:   "consumers",
+			Namespace:   namespace,
 			Name:        "consumers_pusher_http_40x",
 			Help:        "How many messages can't be processed.",
-			ConstLabels: prometheus.Labels{"env": config.String("app.env"), "app": config.String("app.name")},
+			ConstLabels: labels,
 		},
 	)
 	prometheus.MustRegister(pusher40x)
@@ -67,21 +68,21 @@ func newMetricsCollector() *metricsCollector {
 
 	pusher50x := prometheus.NewCounter(
 		prometheus.CounterOpts{
-			Namespace:   "consumers",
+			Namespace:   namespace,
 			Name:        "consumers_pusher_http_50x",
 			Help:        "How many messages can't be processed.",
-			ConstLabels: prometheus.Labels{"env": config.String("app.env"), "app": config.String("app.name")},
+			ConstLabels: labels,
 		},
 	)
 	prometheus.MustRegister(pusher50x)
 	counters["consumers.pusher.http.50x"] = pusher50x
 
 	client := prometheus.NewSummary(prometheus.SummaryOpts{
-		Namespace:   "consumers",
+		Namespace:   namespace,
 		Name:        "consumers_pusher_http_time",
 		Help:        "Duration of the login request.",
 		Objectives:  map[float64]float64{0.5: 0.05, 0.9: 0.01, 0.99: 0.001},
-		ConstLabels: prometheus.Labels{"env": config.String("app.env"), "app": config.String("app.name")},
+		ConstLabels: labels,
 	})
 	prometheus.MustRegister(client)
 	summaries["consumers.pusher.http.time"] = client
@@ -90,7 +91,7 @@ func newMetricsCollector() *metricsCollector {
 		prometheus.CounterOpts{
 			Name:        "consumers_pusher_generic_counter",
 			Help:        "Generic counter. Filtered by name",
-			ConstLabels: prometheus.Labels{"env": config.String("app.env"), "app": config.String("app.name")},
+			ConstLabels: labels,
 		},
 		[]string{"name"},
 	)
