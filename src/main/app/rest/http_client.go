@@ -28,9 +28,9 @@ func NewHttpAppClient(rb *rest.RequestBuilder) HttpAppClient {
 func (c HttpAppClient) PostMessage(requestBody *RequestBody) error {
 	startTime := time.Now()
 	response := c.rb.Post(c.baseURL, requestBody)
-	elapsed := time.Since(startTime)
+	elapsedTime := time.Since(startTime)
 
-	metrics.Collector.RecordExecutionTime("consumers.pusher.http.time", elapsed.Milliseconds())
+	metrics.Collector.RecordExecutionTime("consumers.pusher.http.time", elapsedTime.Milliseconds())
 
 	if response.Err != nil {
 		return response.Err
