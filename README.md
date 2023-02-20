@@ -28,7 +28,7 @@ Send message ──> Topic (Amazon SNS)
     * [RestClient configuration](#restclient-configuration)
     * [RestClient usage](#restclient-usage)
   * [Metrics](#metrics)
-    * [Pusher dashboard](#tasks-dashboard)
+    * [Pusher dashboard](#pusher-dashboard)
   * [Contributors](#contributors)
   * [Support](#support)
 
@@ -92,7 +92,7 @@ Content-Type: application/json
 ```yaml
 # target-app (your-app)
 target-app:
-  endpoint: http://localhost:8000/my-post-endpoint #
+  endpoint: my.app/news
 ```
 
 ### RestClient
