@@ -53,16 +53,6 @@ awslocal sns publish --topic-arn arn:aws:sns:us-east-1:000000000000:orders-topic
 
 ### Configuration
 
-```yaml
-# aws
-aws:
-  url: http://localhost:4566
-  id: development
-  secret: development
-  profile: default
-  region: us-east-1
-```
-
 Environment configuration is based on **Archaius Config**, you should use a similar folder
 structure.
 *SCOPE* env variable in remote environment is required
