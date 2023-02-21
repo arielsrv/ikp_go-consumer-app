@@ -35,7 +35,7 @@ func TestNewConsumer(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, output)
 
-	NewConsumer(queue, httpPusher).Start(ctx)
+	NewConsumer(queue, httpPusher, 1).Start(ctx)
 
 	receiveMessageOutput, err := queue.ReceiveMessageWithContext(ctx, &sqs.ReceiveMessageInput{
 		QueueUrl:              aws.String("https://queues.com/my-queue"),

@@ -8,14 +8,21 @@ aws:
   profile: default
   region: us-east-1
 
+# queues-clients
+queues:
+  users:
+    name: users-consumer
+    parallel: 2 # default is 2
+    timeout: 1000
+
 # consumers
 consumers:
   users:
-    queue-url: http://localhost:4566/000000000000/users-consumer
+    workers: 10 # default is instances core - 1
 
-# target-app (your-app)
-target-app:
-  endpoint: http://localhost:8000/users-consumer
+# pusher (your-app)
+pusher:
+  target-endpoint: http://localhost:8000/users-consumer
 
 # rest-pools
 rest:
@@ -26,5 +33,5 @@ rest:
         timeout: 2000
         connection-timeout: 5000
   client:
-    target-app:
+    target-client:
       pool: default

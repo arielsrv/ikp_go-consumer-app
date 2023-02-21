@@ -14,6 +14,7 @@ import (
 	"github.com/src/main/app/server"
 	"github.com/src/main/app/services"
 	"net/http"
+	"runtime"
 )
 
 var restClients = config.ProvideRestClients()
@@ -34,10 +35,27 @@ func Run() error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	httpClient := rest.NewHttpAppClient(restClients.Get("target-app"))
+	requestBuilder := restClients.Get("target-client")
+	httpClient := rest.NewHttpAppClient(requestBuilder, config.String("pusher.target-endpoint"))
 	httpPusher := pusher.NewHttpPusher(httpClient)
-	queueClient := queue.NewClient(config.String("consumers.users.queue-url"))
-	go consumer.NewConsumer(queueClient, httpPusher).Start(ctx)
+
+	queueClient, err := queue.
+		NewClient(
+			config.String("queues.users.name"),
+			config.TryInt("queues.users.parallel", 10),
+			config.TryInt("queues.users.timeout", 1000))
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	go consumer.
+		NewConsumer(
+			queueClient,
+			httpPusher,
+			config.TryInt("consumers.users.workers", runtime.
+				NumCPU()-1)).
+		Start(ctx)
 
 	host := config.String("HOST")
 	if env.IsEmpty(host) && !env.IsDev() {

@@ -2,11 +2,9 @@ package consumer
 
 import (
 	"context"
-	"github.com/src/main/app/config"
 	"github.com/src/main/app/log"
 	"github.com/src/main/app/pusher"
 	"github.com/src/main/app/queue"
-	"runtime"
 	"sync"
 
 	"github.com/aws/aws-sdk-go/service/sqs"
@@ -15,7 +13,6 @@ import (
 type Config struct {
 	QueueURL string
 	Workers  int
-	MaxMsg   int
 }
 
 type Consumer struct {
@@ -24,13 +21,12 @@ type Consumer struct {
 	config        Config
 }
 
-func NewConsumer(messageClient queue.MessageClient, pusher pusher.Pusher) Consumer {
+func NewConsumer(messageClient queue.MessageClient, pusher pusher.Pusher, workers int) Consumer {
 	return Consumer{
 		messageClient: messageClient,
 		pusher:        pusher,
 		config: Config{
-			Workers: config.TryInt("consumers.users.workers", runtime.NumCPU()-1),
-			MaxMsg:  config.TryInt("consumers.users.workers.messages", 10),
+			Workers: workers,
 		},
 	}
 }

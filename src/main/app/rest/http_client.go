@@ -2,7 +2,6 @@ package rest
 
 import (
 	"github.com/arielsrv/ikp_go-restclient/rest"
-	"github.com/src/main/app/config"
 	"github.com/src/main/app/metrics"
 	"github.com/src/main/app/server/errors"
 	"net/http"
@@ -14,20 +13,20 @@ type AppClient interface {
 }
 
 type HttpAppClient struct {
-	rb      *rest.RequestBuilder
-	baseURL string
+	rb             *rest.RequestBuilder
+	targetEndpoint string
 }
 
-func NewHttpAppClient(rb *rest.RequestBuilder) HttpAppClient {
+func NewHttpAppClient(rb *rest.RequestBuilder, targetEndpoint string) HttpAppClient {
 	return HttpAppClient{
-		rb:      rb,
-		baseURL: config.String("target-app.endpoint"),
+		rb:             rb,
+		targetEndpoint: targetEndpoint,
 	}
 }
 
 func (c HttpAppClient) PostMessage(requestBody *RequestBody) error {
 	startTime := time.Now()
-	response := c.rb.Post(c.baseURL, requestBody)
+	response := c.rb.Post(c.targetEndpoint, requestBody)
 	elapsedTime := time.Since(startTime)
 
 	metrics.Collector.

@@ -13,7 +13,8 @@ type Pusher interface {
 }
 
 type HttpPusher struct {
-	httpClient rest.AppClient
+	httpClient     rest.AppClient
+	targetEndpoint string
 }
 
 type MessageDTO struct {

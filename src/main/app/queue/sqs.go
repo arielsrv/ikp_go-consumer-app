@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"
 	properties "github.com/src/main/app/config"
+	"github.com/src/main/app/helpers/types"
 	"github.com/src/main/app/log"
 	"time"
 
@@ -45,7 +46,7 @@ type MockClient struct {
 	messages map[string][]*sqs.Message
 }
 
-func NewClient(queueUrl string) Client {
+func NewClient(queueName string, parallel int, timeout int) (*Client, error) {
 	session, err := session.NewSessionWithOptions(
 		session.Options{
 			Config: aws.Config{
@@ -62,20 +63,30 @@ func NewClient(queueUrl string) Client {
 	)
 
 	if err != nil {
-		log.Fatalf("aws session error: %s", err)
+		log.Errorf("aws session error: %s", err)
+		return nil, err
 	}
 
-	maxMsg := properties.TryInt("consumers.users.workers.messages", 10)
-	if maxMsg < 1 || maxMsg > 10 {
-		fmt.Errorf("receive argument: msgMax valid values: 1 to 10: given %d", maxMsg)
+	if parallel < 1 || parallel > 10 {
+		log.Errorf("receive argument: queues.users.parallel valid values: 1 to 10: given %d", parallel)
+		return nil, err
 	}
 
-	return Client{
-		timeout:  time.Millisecond * time.Duration(properties.TryInt("context.timeout", 1000)),
-		SQSAPI:   sqs.New(session),
-		QueueUrl: queueUrl,
-		MaxMsg:   int64(maxMsg),
+	sqsClient := sqs.New(session)
+	responseQueueUrl, err := sqsClient.GetQueueUrl(&sqs.GetQueueUrlInput{
+		QueueName: types.String(queueName),
+	})
+	if err != nil {
+		log.Errorf("sqs session error: %s", err)
+		return nil, err
 	}
+
+	return &Client{
+		timeout:  time.Millisecond * time.Duration(timeout),
+		SQSAPI:   sqsClient,
+		QueueUrl: types.StringValue(responseQueueUrl.QueueUrl),
+		MaxMsg:   int64(parallel),
+	}, nil
 }
 
 type MockSQS struct {
