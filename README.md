@@ -60,7 +60,7 @@ structure.
 ```
 └── config
     ├── config.yml (shared config)
-    └── dev
+    └── local
         └── config.yml (for local development)
     └── prod (for remote environment)
         └── config.yml (base config)
@@ -78,7 +78,7 @@ example *test.pets-api.internal.com*
 ```
 └── config
     ├── config.yml                              3th (third)
-    └── dev
+    └── local
         └── config.yml                          <ignored>
     └── prod
         └── config.yml (base config)            2nd (second)
