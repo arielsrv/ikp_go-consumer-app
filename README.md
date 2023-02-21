@@ -157,7 +157,7 @@ Application/json.
 ```yaml
 # pusher (your-app)
 pusher:
-  target-endpoint: http://localhost:8000/users-consumer
+  target-endpoint: my.app/news
 ```
 
 ```
