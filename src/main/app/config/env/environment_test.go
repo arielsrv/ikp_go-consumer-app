@@ -28,7 +28,7 @@ func TestGetScope(t *testing.T) {
 func TestGetEnv(t *testing.T) {
 	actual := env.GetEnv()
 	assert.NotEmpty(t, actual)
-	assert.Equal(t, "dev", actual)
+	assert.Equal(t, "local", actual)
 }
 
 func TestGetEnv_Custom(t *testing.T) {
@@ -53,5 +53,5 @@ func TestGetEnv_Prod(t *testing.T) {
 }
 
 func TestIsDev(t *testing.T) {
-	assert.True(t, env.IsDev())
+	assert.True(t, env.IsLocal())
 }

@@ -58,7 +58,7 @@ func Run() error {
 		Start(ctx)
 
 	host := config.String("HOST")
-	if env.IsEmpty(host) && !env.IsDev() {
+	if env.IsEmpty(host) && !env.IsLocal() {
 		host = "0.0.0.0"
 	} else {
 		host = "127.0.0.1"

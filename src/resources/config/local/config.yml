@@ -1,4 +1,4 @@
-app.env: dev
+app.env: local
 
 # aws
 aws:

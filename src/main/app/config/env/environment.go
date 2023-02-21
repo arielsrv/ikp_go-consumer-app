@@ -8,13 +8,13 @@ import (
 type Env int
 
 const (
-	DEV Env = iota
+	LOCAL Env = iota
 	PROD
 )
 
 func (e Env) String() string {
 	return []string{
-		"dev",
+		"local",
 		"prod",
 	}[e]
 }
@@ -46,13 +46,13 @@ func GetEnv() string {
 	}
 	scope := GetScope()
 	if IsEmpty(scope) {
-		return DEV.String()
+		return LOCAL.String()
 	}
 	return PROD.String()
 }
 
-func IsDev() bool {
-	return DEV.String() == GetEnv()
+func IsLocal() bool {
+	return LOCAL.String() == GetEnv()
 }
 
 func IsEmpty(value string) bool {

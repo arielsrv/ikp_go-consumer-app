@@ -84,7 +84,7 @@ func New(config ...Config) *App {
 	}
 
 	if app.config.Swagger {
-		if !env.IsDev() {
+		if !env.IsLocal() {
 			app.Get("/swagger/*", swagger.New(swagger.Config{ // custom
 				URL: fmt.Sprintf("%s://%s.%s/swagger/doc.json",
 					properties.String("app.protocol"),
@@ -97,7 +97,7 @@ func New(config ...Config) *App {
 		log.Info("Swagger enabled")
 	}
 
-	if app.config.NewRelic && !env.IsDev() {
+	if app.config.NewRelic && !env.IsLocal() {
 		newRelicLicense := properties.String("NEW_RELIC_LICENSE_KEY")
 		if !env.IsEmpty(newRelicLicense) {
 			nrApp, err := newrelic.NewApplication(
