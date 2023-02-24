@@ -236,6 +236,8 @@ consumers_pusher_http_time: delivery time, remember configure your rest client c
 
 TODO Pusher Success, Pusher Errors, HTTP Time, 20x, 40x, 50x
 
+<img width="1267" alt="image" src="https://user-images.githubusercontent.com/760657/221233377-c0dcc50b-8fa8-4064-9883-b0f7d05bc3fe.png">
+
 ### Contributors
 
 Fork me
