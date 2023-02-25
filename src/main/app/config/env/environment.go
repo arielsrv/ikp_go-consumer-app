@@ -55,6 +55,10 @@ func IsLocal() bool {
 	return LOCAL.String() == GetEnv()
 }
 
+func IsProd() bool {
+	return !IsLocal()
+}
+
 func IsEmpty(value string) bool {
 	return value == ""
 }

@@ -21,10 +21,12 @@ func Run() error {
 	server.RegisterHandler(ProvidePingHandler())
 	server.RegisterRoutes(ProvideRoutes())
 
-	topicConsumer := ProvideQueueConsumer()
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	go topicConsumer.Start(ctx)
+	if !env.IsProd() {
+		topicConsumer := ProvideQueueConsumer()
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+		go topicConsumer.Start(ctx)
+	}
 
 	host := config.String("HOST")
 	if env.IsEmpty(host) && !env.IsLocal() {
