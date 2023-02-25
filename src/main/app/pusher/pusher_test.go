@@ -1,27 +1,31 @@
-package pusher
+package pusher_test
 
 import (
+	"testing"
+
+	"github.com/src/main/app/client"
+
+	"github.com/src/main/app/pusher"
+
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/src/main/app/helpers/types"
-	"github.com/src/main/app/rest"
 	"github.com/src/main/app/server/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"testing"
 )
 
-type MockHttpClient struct {
+type MockHTTPClient struct {
 	mock.Mock
 }
 
-func (m *MockHttpClient) PostMessage(*rest.RequestBody) error {
+func (m *MockHTTPClient) PostMessage(*client.RequestBody) error {
 	args := m.Called()
 	return args.Error(0)
 }
 
 func TestHttpPusher_SendMessage(t *testing.T) {
-	httpClient := new(MockHttpClient)
-	httpPusher := NewHttpPusher(httpClient)
+	httpClient := new(MockHTTPClient)
+	httpPusher := pusher.NewHTTPPusher(httpClient)
 
 	httpClient.On("PostMessage").Return(nil)
 
@@ -33,8 +37,8 @@ func TestHttpPusher_SendMessage(t *testing.T) {
 }
 
 func TestHttpPusher_SendMessageErr(t *testing.T) {
-	httpClient := new(MockHttpClient)
-	httpPusher := NewHttpPusher(httpClient)
+	httpClient := new(MockHTTPClient)
+	httpPusher := pusher.NewHTTPPusher(httpClient)
 
 	httpClient.On("PostMessage").Return(errors.NewError(504, "gateway timeout"))
 
@@ -46,8 +50,8 @@ func TestHttpPusher_SendMessageErr(t *testing.T) {
 }
 
 func TestHttpPusher_SendMessageParsingErr(t *testing.T) {
-	httpClient := new(MockHttpClient)
-	httpPusher := NewHttpPusher(httpClient)
+	httpClient := new(MockHTTPClient)
+	httpPusher := pusher.NewHTTPPusher(httpClient)
 
 	httpClient.On("PostMessage").Return(errors.NewError(504, "gateway timeout"))
 

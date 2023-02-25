@@ -5,10 +5,10 @@ go 1.20
 require (
 	github.com/ansrivas/fiberprometheus/v2 v2.6.0
 	github.com/antonfisher/nested-logrus-formatter v1.3.1
+	github.com/arielsrv/go-archaius v0.0.4
 	github.com/arielsrv/ikp_go-restclient v0.0.2
 	github.com/arielsrv/nrfiber v0.0.3
-	github.com/aws/aws-sdk-go v1.44.204
-	github.com/go-chassis/go-archaius v1.5.6
+	github.com/aws/aws-sdk-go v1.44.209
 	github.com/gofiber/fiber/v2 v2.42.0
 	github.com/gofiber/swagger v0.1.9
 	github.com/newrelic/go-agent/v3 v3.20.3
@@ -25,8 +25,7 @@ require (
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/fsnotify/fsnotify v1.4.7 // indirect
-	github.com/go-chassis/openlog v1.1.3 // indirect
+	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
 	github.com/go-openapi/jsonreference v0.20.0 // indirect
 	github.com/go-openapi/spec v0.20.7 // indirect
@@ -51,7 +50,7 @@ require (
 	github.com/rivo/uniseg v0.4.3 // indirect
 	github.com/savsgio/dictpool v0.0.0-20221023140959-7bf2e61cea94 // indirect
 	github.com/savsgio/gotils v0.0.0-20230208104028-c358bd845dee // indirect
-	github.com/spf13/cast v1.3.0 // indirect
+	github.com/spf13/cast v1.5.0 // indirect
 	github.com/stretchr/objx v0.5.0 // indirect
 	github.com/swaggo/files v0.0.0-20220728132757-551d4a08d97a // indirect
 	github.com/tinylib/msgp v1.1.8 // indirect

@@ -2,12 +2,13 @@ package server
 
 import (
 	"fmt"
-	"github.com/arielsrv/nrfiber"
-	"github.com/newrelic/go-agent/v3/newrelic"
-	"github.com/src/main/app/log"
 	"net/http"
 	"os"
 	"reflect"
+
+	"github.com/arielsrv/nrfiber"
+	"github.com/newrelic/go-agent/v3/newrelic"
+	"github.com/src/main/app/log"
 
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	properties "github.com/src/main/app/config"
@@ -136,13 +137,8 @@ type Config struct {
 	Metrics   bool
 }
 
-func Register(verb string, path string, action func(ctx *fiber.Ctx) error) {
-	route := &Route{
-		Verb:   verb,
-		Path:   path,
-		Action: action,
-	}
-	routes = append(routes, *route)
+func RegisterRoutes(routing []Route) {
+	routes = append(routes, routing...)
 }
 
 func RegisterHandler(handler any) {

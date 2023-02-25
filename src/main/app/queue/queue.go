@@ -3,6 +3,8 @@ package queue
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -10,14 +12,12 @@ import (
 	properties "github.com/src/main/app/config"
 	"github.com/src/main/app/helpers/types"
 	"github.com/src/main/app/log"
-	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/sqs"
 )
 
 type MessageClient interface {
-	Send(ctx context.Context, sendRequest *SendRequest) (string, error)
 	Receive(ctx context.Context) ([]*sqs.Message, error)
 	Delete(ctx context.Context, receiptHandle string) error
 }
@@ -37,17 +37,22 @@ type Attribute struct {
 type Client struct {
 	timeout time.Duration
 	sqsiface.SQSAPI
-	QueueUrl string
+	QueueURL string
 	MaxMsg   int64
 }
 
 type MockClient struct {
 	Client
-	messages map[string][]*sqs.Message
 }
 
-func NewClient(queueName string, parallel int, timeout int) (*Client, error) {
-	session, err := session.NewSessionWithOptions(
+type Config struct {
+	QueueName string
+	Parallel  int
+	Timeout   int
+}
+
+func NewClient(config Config) (*Client, error) {
+	awsSession, err := session.NewSessionWithOptions(
 		session.Options{
 			Config: aws.Config{
 				Credentials: credentials.
@@ -67,14 +72,14 @@ func NewClient(queueName string, parallel int, timeout int) (*Client, error) {
 		return nil, err
 	}
 
-	if parallel < 1 || parallel > 10 {
-		log.Errorf("receive argument: queues.users.parallel valid values: 1 to 10: given %d", parallel)
+	if config.Parallel < 1 || config.Parallel > 10 {
+		log.Errorf("receive argument: parallel valid values: 1 to 10: given %d", config.Parallel)
 		return nil, err
 	}
 
-	sqsClient := sqs.New(session)
-	responseQueueUrl, err := sqsClient.GetQueueUrl(&sqs.GetQueueUrlInput{
-		QueueName: types.String(queueName),
+	sqsClient := sqs.New(awsSession)
+	responseQueueURL, err := sqsClient.GetQueueUrl(&sqs.GetQueueUrlInput{
+		QueueName: types.String(config.QueueName),
 	})
 	if err != nil {
 		log.Errorf("sqs session error: %s", err)
@@ -82,10 +87,10 @@ func NewClient(queueName string, parallel int, timeout int) (*Client, error) {
 	}
 
 	return &Client{
-		timeout:  time.Millisecond * time.Duration(timeout),
+		timeout:  time.Millisecond * time.Duration(config.Timeout),
 		SQSAPI:   sqsClient,
-		QueueUrl: types.StringValue(responseQueueUrl.QueueUrl),
-		MaxMsg:   int64(parallel),
+		QueueURL: types.StringValue(responseQueueURL.QueueUrl),
+		MaxMsg:   int64(config.Parallel),
 	}, nil
 }
 
@@ -94,13 +99,13 @@ type MockSQS struct {
 	messages map[string][]*sqs.Message
 }
 
-func NewTestClient(timeout time.Duration, queueUrl string) Client {
+func NewTestClient(timeout time.Duration, queueURL string) Client {
 	return Client{
 		timeout: timeout,
 		SQSAPI: &MockSQS{
 			messages: map[string][]*sqs.Message{},
 		},
-		QueueUrl: queueUrl,
+		QueueURL: queueURL,
 	}
 }
 
@@ -130,30 +135,6 @@ func (m *MockSQS) DeleteMessageWithContext(_ aws.Context, in *sqs.DeleteMessageI
 	return &sqs.DeleteMessageOutput{}, nil
 }
 
-func (s Client) Send(ctx context.Context, sendRequest *SendRequest) (string, error) {
-	ctx, cancel := context.WithTimeout(ctx, s.timeout)
-	defer cancel()
-
-	attributes := make(map[string]*sqs.MessageAttributeValue, len(sendRequest.Attributes))
-	for _, attribute := range sendRequest.Attributes {
-		attributes[attribute.Key] = &sqs.MessageAttributeValue{
-			StringValue: aws.String(attribute.Value),
-			DataType:    aws.String(attribute.Type),
-		}
-	}
-
-	sendMessageOutput, err := s.SendMessageWithContext(ctx, &sqs.SendMessageInput{
-		MessageAttributes: attributes,
-		MessageBody:       aws.String(sendRequest.Body),
-		QueueUrl:          aws.String(sendRequest.QueueURL),
-	})
-	if err != nil {
-		return "", fmt.Errorf("send: %w", err)
-	}
-
-	return *sendMessageOutput.MessageId, nil
-}
-
 func (s Client) Receive(ctx context.Context) ([]*sqs.Message, error) {
 	var waitTimeSeconds int64 = 10
 
@@ -163,7 +144,7 @@ func (s Client) Receive(ctx context.Context) ([]*sqs.Message, error) {
 	defer cancel()
 
 	receiveMessageOutput, err := s.ReceiveMessageWithContext(ctx, &sqs.ReceiveMessageInput{
-		QueueUrl:              aws.String(s.QueueUrl),
+		QueueUrl:              aws.String(s.QueueURL),
 		MaxNumberOfMessages:   aws.Int64(s.MaxMsg),
 		WaitTimeSeconds:       aws.Int64(waitTimeSeconds),
 		MessageAttributeNames: aws.StringSlice([]string{"All"}),
@@ -180,7 +161,7 @@ func (s Client) Delete(ctx context.Context, receiptHandle string) error {
 	defer cancel()
 
 	if _, err := s.DeleteMessageWithContext(ctx, &sqs.DeleteMessageInput{
-		QueueUrl:      aws.String(s.QueueUrl),
+		QueueUrl:      aws.String(s.QueueURL),
 		ReceiptHandle: aws.String(receiptHandle),
 	}); err != nil {
 		return fmt.Errorf("delete: %w", err)

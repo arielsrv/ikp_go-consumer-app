@@ -1,11 +1,12 @@
 package handlers_test
 
 import (
-	"github.com/src/main/app/log"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
 	"testing"
+
+	"github.com/src/main/app/log"
 
 	"github.com/src/main/app/server"
 

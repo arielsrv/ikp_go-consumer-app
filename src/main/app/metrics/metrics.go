@@ -105,6 +105,7 @@ func (m metricsCollector) IncrementCounter(name string) {
 	if counter, ok := counters[name]; ok {
 		counter.Inc()
 	} else {
+		log.Warnf("missing metric collector %s, fallback to generic metric collector", name)
 		genericCounter.WithLabelValues(name).Inc()
 	}
 }

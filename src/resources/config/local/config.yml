@@ -1,5 +1,10 @@
 app.env: local
 
+public: http://localhost:8080
+protocol: http
+host: 127.0.0.1
+port: 8080
+
 # aws
 aws:
   url: http://localhost:4566
@@ -10,19 +15,19 @@ aws:
 
 # queues-clients
 queues:
-  users:
-    name: users-consumer
+  orders:
+    name: orders-consumer
     parallel: 2 # default is 2
     timeout: 1000
 
 # consumers
 consumers:
-  users:
+  orders:
     workers: 10 # default is instances core - 1
 
 # pusher (your-app)
 pusher:
-  target-endpoint: http://localhost:8000/users-consumer
+  target-endpoint: http://localhost:4000/orders-consumer
 
 # rest-pools
 rest:
@@ -30,8 +35,8 @@ rest:
     default:
       pool:
         size: 20
-        timeout: 2000
-        connection-timeout: 5000
+        timeout: 20000
+        connection-timeout: 50000
   client:
     target-client:
       pool: default

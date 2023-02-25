@@ -12,6 +12,10 @@ env:
   ORM_OUTPUT_FOLDER: src/main/app/ent
 
 tasks:
+  lint:
+    desc: Use golangci-lint (.golangci.yml).
+    cmds:
+      - golangci-lint run --fix
   test:
     desc: Run test.
     cmds:

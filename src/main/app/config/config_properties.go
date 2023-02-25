@@ -2,16 +2,17 @@ package config
 
 import (
 	"fmt"
-	"github.com/src/main/app/log"
 	"os"
 	"path"
 	"runtime"
+	"strings"
 
-	config "github.com/go-chassis/go-archaius"
+	"github.com/arielsrv/go-archaius"
+
+	"github.com/src/main/app/log"
 
 	"github.com/src/main/app/helpers/files"
 
-	"github.com/go-chassis/go-archaius"
 	"github.com/src/main/app/config/env"
 )
 
@@ -21,7 +22,7 @@ const (
 
 func init() {
 	showWd()
-	log.Info("INFO: trying to load config ...")
+	log.Warn("trying to load config ...")
 	_, caller, _, _ := runtime.Caller(0)
 	root := path.Join(path.Dir(caller), "../../..")
 	err := os.Chdir(root)
@@ -56,9 +57,9 @@ func init() {
 		compositeConfig = append(compositeConfig, sharedConfig)
 	}
 
-	err = config.Init(
-		config.WithENVSource(),
-		config.WithRequiredFiles(compositeConfig),
+	err = archaius.Init(
+		archaius.WithENVSource(),
+		archaius.WithRequiredFiles(compositeConfig),
 	)
 
 	if err != nil {
@@ -73,17 +74,34 @@ func showWd() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Info("INFO: working directory: " + wd)
+	log.Info("working directory: " + wd)
 }
 
 func String(key string) string {
-	return config.GetString(key, "")
+	value, err := archaius.GetValue(strings.ToLower(key)).ToString()
+	if err != nil {
+		fallback := ""
+		log.Warnf("warn: config %s not found, fallback to empty string", key)
+		return fallback
+	}
+	return value
 }
 
 func Int(key string) int {
-	return config.GetInt(key, 0)
+	value, err := archaius.GetValue(strings.ToLower(key)).ToInt()
+	if err != nil {
+		var fallback = 0
+		log.Warnf(fmt.Sprintf("warn: config %s not found, fallback to %d", key, fallback))
+		return fallback
+	}
+	return value
 }
 
 func TryInt(key string, defaultValue int) int {
-	return archaius.GetInt(key, defaultValue) //nolint:typecheck
+	value, err := archaius.GetValue(strings.ToLower(key)).ToInt()
+	if err != nil {
+		log.Warnf(fmt.Sprintf("warn: config %s not found, fallback to %d", key, defaultValue))
+		return defaultValue
+	}
+	return value
 }

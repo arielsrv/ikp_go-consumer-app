@@ -2,13 +2,14 @@ package config
 
 import (
 	"fmt"
-	"github.com/src/main/app/helpers/arrays"
 	"regexp"
 	"time"
 
+	"github.com/src/main/app/helpers/arrays"
+
 	"github.com/arielsrv/ikp_go-restclient/rest"
 
-	"github.com/go-chassis/go-archaius"
+	"github.com/arielsrv/go-archaius"
 )
 
 const (

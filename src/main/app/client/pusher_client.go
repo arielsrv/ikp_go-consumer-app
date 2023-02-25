@@ -1,47 +1,47 @@
-package rest
+package client
 
 import (
+	"net/http"
+	"time"
+
 	"github.com/arielsrv/ikp_go-restclient/rest"
 	"github.com/src/main/app/metrics"
 	"github.com/src/main/app/server/errors"
-	"net/http"
-	"time"
 )
 
 type AppClient interface {
-	PostMessage(targetAppRequest *RequestBody) error
+	PostMessage(body *RequestBody) error
 }
 
-type HttpAppClient struct {
-	rb             *rest.RequestBuilder
+type HTTPPusherClient struct {
+	rb             rest.IRequestBuilder
 	targetEndpoint string
 }
 
-func NewHttpAppClient(rb *rest.RequestBuilder, targetEndpoint string) HttpAppClient {
-	return HttpAppClient{
+func NewHTTPPusherClient(rb rest.IRequestBuilder, endpoint string) HTTPPusherClient {
+	return HTTPPusherClient{
 		rb:             rb,
-		targetEndpoint: targetEndpoint,
+		targetEndpoint: endpoint,
 	}
 }
 
-func (c HttpAppClient) PostMessage(requestBody *RequestBody) error {
+func (c HTTPPusherClient) PostMessage(requestBody *RequestBody) error {
 	startTime := time.Now()
 	response := c.rb.Post(c.targetEndpoint, requestBody)
 	elapsedTime := time.Since(startTime)
 
-	metrics.Collector.
-		RecordExecutionTime("consumers.pusher.http.time", elapsedTime.Milliseconds())
+	metrics.Collector.RecordExecutionTime("consumers.pusher.clients.time", elapsedTime.Milliseconds())
 
 	if response.Err != nil {
 		return response.Err
 	}
 
 	if response.StatusCode >= 200 && response.StatusCode < 300 {
-		metrics.Collector.IncrementCounter("consumers.pusher.http.20x")
+		metrics.Collector.IncrementCounter("consumers.pusher.clients.20x")
 	} else if response.StatusCode >= 400 && response.StatusCode < 500 {
-		metrics.Collector.IncrementCounter("consumers.pusher.http.40x")
+		metrics.Collector.IncrementCounter("consumers.pusher.clients.40x")
 	} else if response.StatusCode >= 500 {
-		metrics.Collector.IncrementCounter("consumers.pusher.http.50x")
+		metrics.Collector.IncrementCounter("consumers.pusher.clients.50x")
 	}
 
 	if response.StatusCode != http.StatusOK {
@@ -52,6 +52,6 @@ func (c HttpAppClient) PostMessage(requestBody *RequestBody) error {
 }
 
 type RequestBody struct {
-	Id  string `json:"id,omitempty"`
+	ID  string `json:"id,omitempty"`
 	Msg string `json:"msg,omitempty"`
 }

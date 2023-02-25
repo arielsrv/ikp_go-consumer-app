@@ -1,22 +1,25 @@
-package types
+package types_test
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/src/main/app/helpers/types"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestString(t *testing.T) {
-	actual := String("Hello world")
+	actual := types.String("Hello world")
 	assert.NotNil(t, actual)
 }
 
 func TestStringValue(t *testing.T) {
-	value1 := String("Hello world")
-	value2 := String("Hello world")
+	value1 := types.String("Hello world")
+	value2 := types.String("Hello world")
 
-	actual1 := StringValue(value1)
-	actual2 := StringValue(value2)
-	actual3 := StringValue(nil)
+	actual1 := types.StringValue(value1)
+	actual2 := types.StringValue(value2)
+	actual3 := types.StringValue(nil)
 
 	assert.True(t, actual1 == actual2)
 	assert.Equal(t, "", actual3)

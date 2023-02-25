@@ -1,9 +1,10 @@
 package log
 
 import (
+	"os"
+
 	nested "github.com/antonfisher/nested-logrus-formatter"
 	log "github.com/sirupsen/logrus"
-	"os"
 )
 
 func init() {
@@ -26,6 +27,8 @@ func init() {
 type ILogger interface {
 	Info(v ...any)
 	Infof(format string, v ...any)
+	Warn(v ...any)
+	Warnf(format string, v ...any)
 	Error(v ...any)
 	Errorf(format string, v ...any)
 	Fatal(v ...any)
@@ -43,6 +46,14 @@ func (s stdLogger) Info(v ...any) {
 
 func (s stdLogger) Infof(format string, v ...any) {
 	log.Printf(format, v...)
+}
+
+func (s stdLogger) Warn(v ...any) {
+	log.Warn(v...)
+}
+
+func (s stdLogger) Warnf(format string, v ...any) {
+	log.Warnf(format, v...)
 }
 
 func (s stdLogger) Error(v ...any) {
@@ -67,6 +78,14 @@ func Info(v ...any) {
 
 func Infof(format string, v ...any) {
 	logger.Infof(format, v...)
+}
+
+func Warn(v ...any) {
+	logger.Warn(v...)
+}
+
+func Warnf(format string, v ...any) {
+	logger.Warnf(format, v...)
 }
 
 func Error(v ...any) {

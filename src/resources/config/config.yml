@@ -1,2 +1,1 @@
-app.name: go-consumer-app
-rest.client.target-app.baseUrl: http://localhost:8080
+app.name: go-consumer-app # template

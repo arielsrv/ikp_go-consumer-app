@@ -2,53 +2,53 @@ package consumer
 
 import (
 	"context"
-	"github.com/src/main/app/log"
-	"github.com/src/main/app/pusher"
-	"github.com/src/main/app/queue"
 	"sync"
 
-	"github.com/aws/aws-sdk-go/service/sqs"
-)
+	"github.com/src/main/app/queue"
 
-type Config struct {
-	QueueURL string
-	Workers  int
-}
+	"github.com/aws/aws-sdk-go/service/sqs"
+	"github.com/src/main/app/log"
+	"github.com/src/main/app/pusher"
+)
 
 type Consumer struct {
 	messageClient queue.MessageClient
 	pusher        pusher.Pusher
-	config        Config
+	workers       int
 }
 
-func NewConsumer(messageClient queue.MessageClient, pusher pusher.Pusher, workers int) Consumer {
+type Config struct {
+	MessageClient queue.MessageClient
+	Pusher        pusher.Pusher
+	Workers       int
+}
+
+func NewConsumer(config Config) Consumer {
 	return Consumer{
-		messageClient: messageClient,
-		pusher:        pusher,
-		config: Config{
-			Workers: workers,
-		},
+		messageClient: config.MessageClient,
+		pusher:        config.Pusher,
+		workers:       config.Workers,
 	}
 }
 
 func (c Consumer) Start(ctx context.Context) {
 	wg := &sync.WaitGroup{}
-	wg.Add(c.config.Workers)
+	wg.Add(c.workers)
 
-	for i := 1; i <= c.config.Workers; i++ {
+	for i := 1; i <= c.workers; i++ {
 		go c.worker(ctx, wg, i)
 	}
 
 	wg.Wait()
 }
 
-func (c Consumer) worker(ctx context.Context, wg *sync.WaitGroup, workerId int) {
+func (c Consumer) worker(ctx context.Context, wg *sync.WaitGroup, workerID int) {
 	defer wg.Done()
 
 	for {
 		select {
 		case <-ctx.Done():
-			log.Infof("worker %d: stopped\n", workerId)
+			log.Infof("worker %d: stopped\n", workerID)
 			return
 		default:
 		}
@@ -56,7 +56,7 @@ func (c Consumer) worker(ctx context.Context, wg *sync.WaitGroup, workerId int) 
 		messages, err := c.messageClient.Receive(ctx)
 		if err != nil {
 			// Critical error
-			log.Errorf("worker %d: receive error: %s\n", workerId, err.Error())
+			log.Errorf("worker %d: receive error: %s\n", workerID, err.Error())
 			continue
 		}
 

@@ -1,28 +1,20 @@
-app.env: local
-
-# aws
-aws:
-  url: http://localhost:4566
-  id: development
-  secret: development
-  profile: default
-  region: us-east-1
+public: https://consumers-api.pro.dp.iskaypet.com
 
 # queues-clients
 queues:
-  users:
-    name: users-consumer
+  orders:
+    name: orders-consumer
     parallel: 2 # default is 2
     timeout: 1000
 
 # consumers
 consumers:
-  users:
+  orders:
     workers: 10 # default is instances core - 1
 
 # pusher (your-app)
 pusher:
-  target-endpoint: http://localhost:8000/users-consumer
+  target-endpoint: https://{MY_APP}.{SCOPE}.dp.iskaypet.com/orders-consumer
 
 # rest-pools
 rest:

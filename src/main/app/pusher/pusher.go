@@ -2,33 +2,34 @@ package pusher
 
 import (
 	"encoding/json"
+
+	"github.com/src/main/app/client"
+
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/src/main/app/log"
 	"github.com/src/main/app/metrics"
-	"github.com/src/main/app/rest"
 )
 
 type Pusher interface {
 	SendMessage(message *sqs.Message) error
 }
 
-type HttpPusher struct {
-	httpClient     rest.AppClient
-	targetEndpoint string
+type HTTPPusher struct {
+	httpClient client.AppClient
 }
 
 type MessageDTO struct {
-	Id      string `json:"MessageId,omitempty"`
+	ID      string `json:"MessageId,omitempty"`
 	Message string `json:"message,omitempty"`
 }
 
-func NewHttpPusher(httpClient rest.AppClient) *HttpPusher {
-	return &HttpPusher{
+func NewHTTPPusher(httpClient client.AppClient) *HTTPPusher {
+	return &HTTPPusher{
 		httpClient: httpClient,
 	}
 }
 
-func (h HttpPusher) SendMessage(message *sqs.Message) error {
+func (h HTTPPusher) SendMessage(message *sqs.Message) error {
 	var messageDTO MessageDTO
 	err := json.Unmarshal([]byte(*message.Body), &messageDTO)
 	if err != nil {
@@ -36,11 +37,11 @@ func (h HttpPusher) SendMessage(message *sqs.Message) error {
 		return err
 	}
 
-	requestBody := new(rest.RequestBody)
-	requestBody.Id = messageDTO.Id
+	requestBody := new(client.RequestBody)
+	requestBody.ID = messageDTO.ID
 	requestBody.Msg = messageDTO.Message
 
-	log.Infof("message - id: %s, body: %s", requestBody.Id, requestBody.Msg)
+	log.Infof("message - id: %s, body: %s", requestBody.ID, requestBody.Msg)
 
 	err = h.httpClient.PostMessage(requestBody)
 

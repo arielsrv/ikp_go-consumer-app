@@ -22,3 +22,8 @@ func TestGetIntProperty_Err(t *testing.T) {
 	actual := config.Int("missing")
 	assert.Equal(t, 0, actual)
 }
+
+func TestGetTryIntProperty_Err(t *testing.T) {
+	actual := config.TryInt("missing", 1)
+	assert.Equal(t, 1, actual)
+}
