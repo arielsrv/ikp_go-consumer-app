@@ -85,9 +85,7 @@ func New(config ...Config) *App {
 	if app.config.Swagger {
 		if !env.IsLocal() {
 			app.Get("/swagger/*", swagger.New(swagger.Config{ // custom
-				URL: fmt.Sprintf("%s://%s.%s/swagger/doc.json",
-					properties.String("protocol"),
-					env.GetScope(),
+				URL: fmt.Sprintf("%s/swagger/doc.json",
 					properties.String("public")),
 			}))
 		} else {
