@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/src/main/app/helpers/files"
+
 	"github.com/stretchr/testify/assert"
 )
 

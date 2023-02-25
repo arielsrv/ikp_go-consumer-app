@@ -4,8 +4,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/arielsrv/ikp_go-restclient/rest"
 	"github.com/src/main/app/metrics"
+
+	"github.com/arielsrv/ikp_go-restclient/rest"
 	"github.com/src/main/app/server/errors"
 )
 

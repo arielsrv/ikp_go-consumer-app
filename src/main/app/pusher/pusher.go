@@ -3,11 +3,12 @@ package pusher
 import (
 	"encoding/json"
 
+	"github.com/src/main/app/log"
+	"github.com/src/main/app/metrics"
+
 	"github.com/src/main/app/client"
 
 	"github.com/aws/aws-sdk-go/service/sqs"
-	"github.com/src/main/app/log"
-	"github.com/src/main/app/metrics"
 )
 
 type Pusher interface {

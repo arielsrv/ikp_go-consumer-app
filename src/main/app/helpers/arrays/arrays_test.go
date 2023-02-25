@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/src/main/app/helpers/arrays"
+
 	"github.com/stretchr/testify/assert"
 )
 

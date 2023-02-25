@@ -2,16 +2,14 @@ package config
 
 import (
 	"fmt"
-	"github.com/arielsrv/go-archaius"
 	"os"
 	"path"
 	"runtime"
 
-	"github.com/src/main/app/log"
-
-	"github.com/src/main/app/helpers/files"
-
+	"github.com/arielsrv/go-archaius"
 	"github.com/src/main/app/config/env"
+	"github.com/src/main/app/helpers/files"
+	"github.com/src/main/app/log"
 )
 
 const (
@@ -64,7 +62,7 @@ func init() {
 		log.Fatal(err)
 	}
 
-	log.Infof("INFO: ENV: %s, SCOPE: %s", environment, scope)
+	log.Warnf("ENV: %s, SCOPE: %s", environment, scope)
 }
 
 func showWd() {

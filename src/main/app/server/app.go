@@ -6,15 +6,13 @@ import (
 	"os"
 	"reflect"
 
-	"github.com/arielsrv/nrfiber"
-	"github.com/newrelic/go-agent/v3/newrelic"
+	properties "github.com/src/main/app/config"
+	"github.com/src/main/app/config/env"
 	"github.com/src/main/app/log"
 
+	"github.com/arielsrv/nrfiber"
 	"github.com/gofiber/fiber/v2/middleware/cors"
-	properties "github.com/src/main/app/config"
-
-	"github.com/src/main/app/config/env"
-
+	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/src/main/app/server/errors"
 
 	"github.com/ansrivas/fiberprometheus/v2"
@@ -88,9 +86,9 @@ func New(config ...Config) *App {
 		if !env.IsLocal() {
 			app.Get("/swagger/*", swagger.New(swagger.Config{ // custom
 				URL: fmt.Sprintf("%s://%s.%s/swagger/doc.json",
-					properties.String("app.protocol"),
+					properties.String("protocol"),
 					env.GetScope(),
-					properties.String("app.domain")),
+					properties.String("public")),
 			}))
 		} else {
 			app.Add(http.MethodGet, "/swagger/*", swagger.HandlerDefault)
@@ -102,7 +100,7 @@ func New(config ...Config) *App {
 		newRelicLicense := properties.String("NEW_RELIC_LICENSE_KEY")
 		if !env.IsEmpty(newRelicLicense) {
 			nrApp, err := newrelic.NewApplication(
-				newrelic.ConfigAppName("golang-template"),
+				newrelic.ConfigAppName("app.name"),
 				newrelic.ConfigLicense(newRelicLicense),
 				newrelic.ConfigDebugLogger(os.Stdout),
 			)

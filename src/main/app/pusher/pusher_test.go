@@ -3,12 +3,13 @@ package pusher_test
 import (
 	"testing"
 
+	"github.com/src/main/app/helpers/types"
+
 	"github.com/src/main/app/client"
 
 	"github.com/src/main/app/pusher"
 
 	"github.com/aws/aws-sdk-go/service/sqs"
-	"github.com/src/main/app/helpers/types"
 	"github.com/src/main/app/server/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"

@@ -7,14 +7,15 @@ import (
 	"github.com/src/main/app/config"
 	"github.com/src/main/app/config/env"
 	"github.com/src/main/app/log"
+
 	"github.com/src/main/app/server"
 )
 
 func Run() error {
 	app := server.New(server.Config{
 		Recovery:  true,
-		RequestID: true,
-		Logger:    true,
+		RequestID: false,
+		Logger:    false,
 		Metrics:   true,
 		Swagger:   true,
 	})

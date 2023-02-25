@@ -4,10 +4,11 @@ import (
 	"context"
 	"sync"
 
+	"github.com/src/main/app/log"
+
 	"github.com/src/main/app/queue"
 
 	"github.com/aws/aws-sdk-go/service/sqs"
-	"github.com/src/main/app/log"
 	"github.com/src/main/app/pusher"
 )
 
