@@ -2,12 +2,10 @@ package config
 
 import (
 	"fmt"
+	"github.com/arielsrv/go-archaius"
 	"os"
 	"path"
 	"runtime"
-	"strings"
-
-	"github.com/arielsrv/go-archaius"
 
 	"github.com/src/main/app/log"
 
@@ -78,7 +76,7 @@ func showWd() {
 }
 
 func String(key string) string {
-	value, err := archaius.GetValue(strings.ToLower(key)).ToString()
+	value, err := archaius.GetValue(key).ToString()
 	if err != nil {
 		fallback := ""
 		log.Warnf("warn: config %s not found, fallback to empty string", key)
@@ -88,7 +86,7 @@ func String(key string) string {
 }
 
 func Int(key string) int {
-	value, err := archaius.GetValue(strings.ToLower(key)).ToInt()
+	value, err := archaius.GetValue(key).ToInt()
 	if err != nil {
 		var fallback = 0
 		log.Warnf(fmt.Sprintf("warn: config %s not found, fallback to %d", key, fallback))
@@ -98,7 +96,7 @@ func Int(key string) int {
 }
 
 func TryInt(key string, defaultValue int) int {
-	value, err := archaius.GetValue(strings.ToLower(key)).ToInt()
+	value, err := archaius.GetValue(key).ToInt()
 	if err != nil {
 		log.Warnf(fmt.Sprintf("warn: config %s not found, fallback to %d", key, defaultValue))
 		return defaultValue
