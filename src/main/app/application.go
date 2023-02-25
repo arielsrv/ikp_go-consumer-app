@@ -16,6 +16,7 @@ func Run() error {
 		RequestID: true,
 		Logger:    true,
 		Metrics:   true,
+		Swagger:   true,
 	})
 
 	server.RegisterHandler(ProvidePingHandler())
