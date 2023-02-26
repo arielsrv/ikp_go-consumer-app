@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"reflect"
 
 	properties "github.com/src/main/app/config"
 	"github.com/src/main/app/config/env"
+
+	"github.com/gofiber/fiber/v2"
+
 	"github.com/src/main/app/log"
 
 	"github.com/arielsrv/nrfiber"
@@ -16,19 +18,27 @@ import (
 	"github.com/src/main/app/server/errors"
 
 	"github.com/ansrivas/fiberprometheus/v2"
-	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
 	"github.com/gofiber/swagger"
 )
 
-var handlers = make(map[string]any)
 var routes []Route
+
+type Settings struct {
+	Recovery  bool
+	Swagger   bool
+	RequestID bool
+	Logger    bool
+	Cors      bool
+	NewRelic  bool
+	Metrics   bool
+}
 
 type App struct {
 	*fiber.App
-	config Config
+	config Settings
 }
 
 type Route struct {
@@ -44,17 +54,24 @@ func (app *App) Start(addr string) error {
 	return app.Listen(addr)
 }
 
-func New(config ...Config) *App {
+func (app *App) Route(method, path string, handlers ...fiber.Handler) {
+	app.Add(method, path, handlers...)
+}
+
+func New(config ...Settings) *App {
 	app := &App{
 		App: fiber.New(fiber.Config{
 			DisableStartupMessage: true,
 			ErrorHandler:          errors.ErrorHandler,
 		}),
-		config: Config{
+		config: Settings{
 			Recovery:  true,
-			Swagger:   true,
-			RequestID: true,
-			Logger:    true,
+			Swagger:   false,
+			RequestID: false,
+			Logger:    false,
+			Cors:      false,
+			NewRelic:  false,
+			Metrics:   false,
 		},
 	}
 
@@ -116,43 +133,9 @@ func New(config ...Config) *App {
 
 	if app.config.Metrics {
 		prometheus := fiberprometheus.New(properties.String("app.name"))
-		prometheus.RegisterAt(app, "/metrics")
+		prometheus.RegisterAt(app.App, "/metrics")
 		app.Use(prometheus.Middleware)
 	}
 
 	return app
-}
-
-type Config struct {
-	Recovery  bool
-	Swagger   bool
-	RequestID bool
-	Logger    bool
-	Cors      bool
-	NewRelic  bool
-	Metrics   bool
-}
-
-func RegisterRoutes(routing []Route) {
-	routes = append(routes, routing...)
-}
-
-func RegisterHandler(handler any) {
-	key := getType(handler)
-	handlers[key] = handler
-}
-
-func Resolve[T any](_ ...T) *T {
-	args := make([]T, 1)
-	key := getType(args[0])
-	return handlers[key].(*T)
-}
-
-func getType(value any) string {
-	name := reflect.TypeOf(value)
-	if name.Kind() == reflect.Ptr {
-		name = name.Elem()
-	}
-
-	return name.String()
 }

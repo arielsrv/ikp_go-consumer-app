@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"regexp"
+	"sync"
 	"time"
 
 	"github.com/src/main/app/helpers/arrays"
@@ -25,29 +26,34 @@ const (
 
 var restPoolPattern = regexp.MustCompile(RestPoolPattern)
 var restClientPattern = regexp.MustCompile(RestClientPattern)
+var restClientFactory RESTClientFactory
+
+var instance sync.Once
 
 func ProvideRestClients() *RESTClientFactory {
-	restPoolFactory := &RESTPoolFactory{builders: map[string]*rest.RequestBuilder{}}
-	poolNames := getNamesInKeys(restPoolPattern)
-	for _, name := range poolNames {
-		restPool := &rest.RequestBuilder{
-			Timeout:        time.Millisecond * time.Duration(TryInt(fmt.Sprintf("rest.pool.%s.pool.timeout", name), DefaultPoolTimeout)),
-			ConnectTimeout: time.Millisecond * time.Duration(TryInt(fmt.Sprintf("rest.pool.%s.pool.connection-timeout", name), DefaultSocketTimeout)),
-			CustomPool: &rest.CustomPool{
-				MaxIdleConnsPerHost: TryInt(fmt.Sprintf("rest.pool.%s.pool.size", name), DefaultPoolSize),
-			},
+	instance.Do(func() {
+		restPoolFactory := &RESTPoolFactory{builders: map[string]*rest.RequestBuilder{}}
+		poolNames := getNamesInKeys(restPoolPattern)
+		for _, name := range poolNames {
+			restPool := &rest.RequestBuilder{
+				Timeout:        time.Millisecond * time.Duration(TryInt(fmt.Sprintf("rest.pool.%s.pool.timeout", name), DefaultPoolTimeout)),
+				ConnectTimeout: time.Millisecond * time.Duration(TryInt(fmt.Sprintf("rest.pool.%s.pool.connection-timeout", name), DefaultSocketTimeout)),
+				CustomPool: &rest.CustomPool{
+					MaxIdleConnsPerHost: TryInt(fmt.Sprintf("rest.pool.%s.pool.size", name), DefaultPoolSize),
+				},
+			}
+			restPoolFactory.Add(restPool)
+			restPoolFactory.Register(name, restPool)
 		}
-		restPoolFactory.Add(restPool)
-		restPoolFactory.Register(name, restPool)
-	}
 
-	restClientFactory := RESTClientFactory{clients: map[string]*rest.RequestBuilder{}}
-	clientNames := getNamesInKeys(restClientPattern)
-	for _, name := range clientNames {
-		poolName := String(fmt.Sprintf("rest.client.%s.pool", name))
-		pool := restPoolFactory.GetPool(poolName)
-		restClientFactory.Register(name, pool)
-	}
+		restClientFactory = RESTClientFactory{clients: map[string]*rest.RequestBuilder{}}
+		clientNames := getNamesInKeys(restClientPattern)
+		for _, name := range clientNames {
+			poolName := String(fmt.Sprintf("rest.client.%s.pool", name))
+			pool := restPoolFactory.GetPool(poolName)
+			restClientFactory.Register(name, pool)
+		}
+	})
 
 	return &restClientFactory
 }
@@ -55,6 +61,10 @@ func ProvideRestClients() *RESTClientFactory {
 type RESTPoolFactory struct {
 	restPools []*rest.RequestBuilder
 	builders  map[string]*rest.RequestBuilder
+}
+
+func NewRESTPoolFactory() *RESTPoolFactory {
+	return &RESTPoolFactory{builders: map[string]*rest.RequestBuilder{}}
 }
 
 func (r *RESTPoolFactory) Add(rb *rest.RequestBuilder) {

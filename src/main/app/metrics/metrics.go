@@ -11,12 +11,17 @@ type IMetricCollector interface {
 	RecordExecutionTime(name string, value int64, tags ...string)
 }
 
-var Collector = newMetricsCollector()
-var counters = make(map[string]prometheus.Counter)
-var summaries = make(map[string]prometheus.Summary)
-var genericCounter *prometheus.CounterVec
-var namespace = "consumers"
-var labels = prometheus.Labels{"env": config.String("app.env"), "app": config.String("app.name")}
+var (
+	Collector         = newMetricsCollector()
+	counters          = make(map[string]prometheus.Counter)
+	summaries         = make(map[string]prometheus.Summary)
+	genericCounter    *prometheus.CounterVec
+	namespace, labels = "consumers", prometheus.Labels{
+		"env":   config.String("app.env"),
+		"app":   config.String("app.name"),
+		"scope": config.String("SCOPE"),
+	}
+)
 
 type metricsCollector struct {
 }
