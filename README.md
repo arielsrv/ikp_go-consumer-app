@@ -49,6 +49,10 @@ awslocal sns subscribe --topic-arn arn:aws:sns:us-east-1:000000000000:orders-top
 awslocal sns publish --topic-arn arn:aws:sns:us-east-1:000000000000:orders-topic --message '{"order_id": 1}'
 ```
 
+TODO
+
+<img width="1422" alt="image" src="https://user-images.githubusercontent.com/760657/221419837-025af527-227c-4941-90be-8036a531ad44.png">
+
 ## SDK
 
 ### Configuration
