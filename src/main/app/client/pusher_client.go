@@ -31,18 +31,18 @@ func (c HTTPPusherClient) PostMessage(requestBody *RequestBody) error {
 	response := c.rb.Post(c.targetEndpoint, requestBody)
 	elapsedTime := time.Since(startTime)
 
-	metrics.Collector.RecordExecutionTime("consumers.pusher.clients.time", elapsedTime.Milliseconds())
+	metrics.Collector.RecordExecutionTime("consumers.pusher.http.time", elapsedTime.Milliseconds())
 
 	if response.Err != nil {
 		return response.Err
 	}
 
 	if response.StatusCode >= 200 && response.StatusCode < 300 {
-		metrics.Collector.IncrementCounter("consumers.pusher.clients.20x")
+		metrics.Collector.IncrementCounter("consumers.pusher.http.20x")
 	} else if response.StatusCode >= 400 && response.StatusCode < 500 {
-		metrics.Collector.IncrementCounter("consumers.pusher.clients.40x")
+		metrics.Collector.IncrementCounter("consumers.pusher.http.40x")
 	} else if response.StatusCode >= 500 {
-		metrics.Collector.IncrementCounter("consumers.pusher.clients.50x")
+		metrics.Collector.IncrementCounter("consumers.pusher.http.50x")
 	}
 
 	if response.StatusCode != http.StatusOK {
