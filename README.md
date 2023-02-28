@@ -17,6 +17,12 @@ Send message ──> Topic (Amazon SNS)
 
 <img width="1211" alt="image" src="https://user-images.githubusercontent.com/760657/220067058-3f86739d-eaa5-49fd-9000-663d99f81642.png">
 
+
+> Example: 8 messages could be handled by 2 workers and 4 receivers
+
+<img width="499" alt="image" src="https://user-images.githubusercontent.com/760657/221838461-5dc11b39-4c13-43d4-8442-c4174bbc1d24.png">
+
+
 ## Table of contents
 
 * [Project setup](#project-setup)
