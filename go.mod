@@ -8,7 +8,7 @@ require (
 	github.com/arielsrv/go-archaius v0.0.4
 	github.com/arielsrv/ikp_go-restclient v0.0.2
 	github.com/arielsrv/nrfiber v0.0.3
-	github.com/aws/aws-sdk-go v1.44.209
+	github.com/aws/aws-sdk-go v1.44.210
 	github.com/gofiber/fiber/v2 v2.42.0
 	github.com/gofiber/swagger v0.1.9
 	github.com/newrelic/go-agent/v3 v3.20.3
