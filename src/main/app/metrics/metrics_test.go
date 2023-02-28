@@ -7,10 +7,10 @@ import (
 )
 
 func TestMetricsCollector_IncrementCounter(t *testing.T) {
-	metrics.Collector.IncrementCounter("consumers.pusher.success")
+	metrics.Collector.IncrementCounter(metrics.PusherSuccess)
 	metrics.Collector.IncrementCounter("fallback")
 }
 func TestMetricsCollector_RecordExecutionTime(t *testing.T) {
-	metrics.Collector.RecordExecutionTime("consumers.pusher.http.time", 2000)
+	metrics.Collector.RecordExecutionTime(metrics.PusherHTTPTime, 2000)
 	metrics.Collector.RecordExecutionTime("fallback", 2000)
 }

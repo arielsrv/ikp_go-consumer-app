@@ -7,9 +7,22 @@ import (
 )
 
 type IMetricCollector interface {
-	IncrementCounter(name string, tags ...string)
-	RecordExecutionTime(name string, value int64, tags ...string)
+	IncrementCounter(name Name)
+	RecordExecutionTime(name Name, value int64)
 }
+
+type Name string
+
+const (
+	PusherSuccess     Name = "pusher_success"
+	PusherError       Name = "pusher_error"
+	PusherStatusOK    Name = "pusher_http_200"
+	PusherStatus40x   Name = "pusher_http_4xx"
+	PusherStatus50x   Name = "pusher_http_5xx"
+	PusherHTTPTime    Name = "pusher_http_time"
+	PusherHTTPTimeout Name = "pusher_http_timeout"
+	Generic           Name = "pusher_generic_counter"
+)
 
 var (
 	Collector         = newMetricsCollector()
@@ -27,75 +40,79 @@ type metricsCollector struct {
 }
 
 func newMetricsCollector() *metricsCollector {
-	success := prometheus.NewCounter(
+	pusherSuccess := prometheus.NewCounter(
 		prometheus.CounterOpts{
 			Namespace:   namespace,
-			Name:        "consumers_pusher_success",
-			Help:        "How many messages processed.",
+			Name:        string(PusherSuccess),
 			ConstLabels: labels,
 		},
 	)
-	prometheus.MustRegister(success)
-	counters["consumers.pusher.success"] = success
+	prometheus.MustRegister(pusherSuccess)
+	counters[string(PusherSuccess)] = pusherSuccess
 
-	errors := prometheus.NewCounter(
+	pusherErrors := prometheus.NewCounter(
 		prometheus.CounterOpts{
 			Namespace:   namespace,
-			Name:        "consumers_pusher_error",
-			Help:        "How many messages can't be processed.",
+			Name:        string(PusherError),
 			ConstLabels: labels,
 		},
 	)
-	prometheus.MustRegister(errors)
-	counters["consumers.pusher.errors"] = errors
+	prometheus.MustRegister(pusherErrors)
+	counters[string(PusherError)] = pusherErrors
 
 	pusher20x := prometheus.NewCounter(
 		prometheus.CounterOpts{
 			Namespace:   namespace,
-			Name:        "consumers_pusher_http_200",
-			Help:        "How many ACK.",
+			Name:        string(PusherStatusOK),
 			ConstLabels: labels,
 		},
 	)
 	prometheus.MustRegister(pusher20x)
-	counters["consumers.pusher.http.20x"] = pusher20x
+	counters[string(PusherStatusOK)] = pusher20x
 
 	pusher40x := prometheus.NewCounter(
 		prometheus.CounterOpts{
 			Namespace:   namespace,
-			Name:        "consumers_pusher_http_40x",
-			Help:        "How many messages can't be processed.",
+			Name:        string(PusherStatus40x),
 			ConstLabels: labels,
 		},
 	)
 	prometheus.MustRegister(pusher40x)
-	counters["consumers.pusher.http.40x"] = pusher40x
+	counters[string(PusherStatus40x)] = pusher40x
 
 	pusher50x := prometheus.NewCounter(
 		prometheus.CounterOpts{
 			Namespace:   namespace,
-			Name:        "consumers_pusher_http_50x",
-			Help:        "How many messages can't be processed.",
+			Name:        string(PusherStatus50x),
 			ConstLabels: labels,
 		},
 	)
 	prometheus.MustRegister(pusher50x)
-	counters["consumers.pusher.http.50x"] = pusher50x
+	counters[string(PusherStatus50x)] = pusher50x
 
 	client := prometheus.NewSummary(prometheus.SummaryOpts{
 		Namespace:   namespace,
-		Name:        "consumers_pusher_http_time",
-		Help:        "Duration of the login request.",
+		Name:        string(PusherHTTPTime),
 		Objectives:  map[float64]float64{0.5: 0.05, 0.9: 0.01, 0.99: 0.001},
 		ConstLabels: labels,
 	})
 	prometheus.MustRegister(client)
-	summaries["consumers.pusher.http.time"] = client
+	summaries[string(PusherHTTPTime)] = client
+
+	pusherTimeout := prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Namespace:   namespace,
+			Name:        string(PusherHTTPTimeout),
+			ConstLabels: labels,
+		},
+	)
+	prometheus.MustRegister(pusherTimeout)
+	counters[string(PusherHTTPTimeout)] = pusherTimeout
 
 	generic := prometheus.NewCounterVec(
 		prometheus.CounterOpts{
-			Name:        "consumers_pusher_generic_counter",
-			Help:        "Generic counter. Filtered by name",
+			Name:        string(Generic),
+			Help:        "Generic counter. This is a fallback.",
 			ConstLabels: labels,
 		},
 		[]string{"name"},
@@ -106,19 +123,19 @@ func newMetricsCollector() *metricsCollector {
 	return &metricsCollector{}
 }
 
-func (m metricsCollector) IncrementCounter(name string) {
-	if counter, ok := counters[name]; ok {
+func (m metricsCollector) IncrementCounter(name Name) {
+	if counter, ok := counters[string(name)]; ok {
 		counter.Inc()
 	} else {
 		log.Warnf("missing metric collector %s, fallback to generic metric collector", name)
-		genericCounter.WithLabelValues(name).Inc()
+		genericCounter.WithLabelValues(string(name)).Inc()
 	}
 }
 
-func (m metricsCollector) RecordExecutionTime(name string, value int64) {
-	if summary, ok := summaries[name]; ok {
+func (m metricsCollector) RecordExecutionTime(name Name, value int64) {
+	if summary, ok := summaries[string(name)]; ok {
 		summary.Observe(float64(value))
 	} else {
-		log.Infof("missing metric collector: %s", name)
+		log.Warnf("missing time metric collector: %s", string(name))
 	}
 }

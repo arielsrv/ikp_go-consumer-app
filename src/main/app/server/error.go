@@ -1,4 +1,4 @@
-package errors
+package server
 
 import (
 	"errors"
@@ -18,10 +18,6 @@ func NewError(statusCode int, message string) *Error {
 
 func (e Error) Error() string {
 	return e.Message
-}
-
-func New(text string) error {
-	return errors.New(text)
 }
 
 func ErrorHandler(ctx *fiber.Ctx, err error) error {

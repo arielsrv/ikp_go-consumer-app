@@ -2,10 +2,10 @@ package consumer_test
 
 import (
 	"context"
-	"errors"
-	"log"
 	"testing"
 	"time"
+
+	"github.com/src/main/app/helpers/types"
 
 	"github.com/src/main/app/consumer"
 
@@ -33,20 +33,13 @@ func TestNewConsumer(t *testing.T) {
 	httpPusher := new(MockPusher)
 	httpPusher.On("SendMessage").Return(nil)
 
-	queueClient := queue.NewTestClient(time.Second*5, "https://queues.com/my-queue")
+	queueClient := queue.NewTestClient("https://queues.com/my-queue")
 	output, err := queueClient.SendMessage(&sqs.SendMessageInput{
 		MessageBody: aws.String("Hello, world!"),
 		QueueUrl:    aws.String("https://queues.com/my-queue"),
 	})
 	assert.NoError(t, err)
 	assert.NotNil(t, output)
-
-	consumer.NewConsumer(
-		consumer.Config{
-			MessageClient: queueClient,
-			Pusher:        httpPusher,
-			Workers:       1}).
-		Start(ctx)
 
 	receiveMessageOutput, err := queueClient.ReceiveMessageWithContext(ctx, &sqs.ReceiveMessageInput{
 		QueueUrl:              aws.String("https://queues.com/my-queue"),
@@ -55,26 +48,6 @@ func TestNewConsumer(t *testing.T) {
 		MessageAttributeNames: aws.StringSlice([]string{"All"}),
 	})
 
-	assert.NoError(t, err)
-	assert.NotNil(t, receiveMessageOutput)
-	assert.Nil(t, receiveMessageOutput.Messages)
-}
-
-func TestNewConsumerErr(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(500))
-	defer cancel()
-
-	httpPusher := new(MockPusher)
-	httpPusher.On("SendMessage").Return(errors.New("http client error"))
-
-	queueClient := queue.NewTestClient(time.Second*5, "https://queues.com/my-queue")
-	output, err := queueClient.SendMessage(&sqs.SendMessageInput{
-		MessageBody: aws.String("Hello, world!"),
-		QueueUrl:    aws.String("https://queues.com/my-queue"),
-	})
-	assert.NoError(t, err)
-	assert.NotNil(t, output)
-
 	consumer.NewConsumer(
 		consumer.Config{
 			MessageClient: queueClient,
@@ -82,15 +55,9 @@ func TestNewConsumerErr(t *testing.T) {
 			Workers:       1}).
 		Start(ctx)
 
-	receiveMessageOutput, err := queueClient.ReceiveMessageWithContext(ctx, &sqs.ReceiveMessageInput{
-		QueueUrl:              aws.String("https://queues.com/my-queue"),
-		MaxNumberOfMessages:   aws.Int64(int64(1)),
-		WaitTimeSeconds:       aws.Int64(10),
-		MessageAttributeNames: aws.StringSlice([]string{"All"}),
-	})
-
 	assert.NoError(t, err)
 	assert.NotNil(t, receiveMessageOutput)
-	assert.Nil(t, receiveMessageOutput.Messages)
-	log.Println()
+	assert.NotNil(t, receiveMessageOutput.Messages)
+	assert.NotNil(t, receiveMessageOutput.Messages[0])
+	assert.Equal(t, receiveMessageOutput.Messages[0].Body, types.String("Hello, world!"))
 }

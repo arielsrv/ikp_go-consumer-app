@@ -15,8 +15,6 @@ import (
 	"github.com/src/main/app/services"
 )
 
-var restClients = config.ProvideRestClients()
-
 var (
 	pingHandlerOnce sync.Once
 	pingHandler     *handlers.PingHandler
@@ -38,7 +36,7 @@ var (
 
 func ProvideQueueConsumer() consumer.Consumer {
 	consumerHandlerOnce.Do(func() {
-		rbPusher := restClients.Get("target-client")
+		rbPusher := config.ProvideRestClients().Get("target-client")
 		pusherClient := client.NewHTTPPusherClient(rbPusher, config.String("pusher.target-endpoint"))
 		httpPusher := pusher.NewHTTPPusher(pusherClient)
 

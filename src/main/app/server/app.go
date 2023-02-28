@@ -2,8 +2,8 @@ package server
 
 import (
 	"fmt"
+	"net"
 	"net/http"
-	"os"
 
 	properties "github.com/src/main/app/config"
 	"github.com/src/main/app/config/env"
@@ -12,19 +12,13 @@ import (
 
 	"github.com/src/main/app/log"
 
-	"github.com/arielsrv/nrfiber"
-	"github.com/gofiber/fiber/v2/middleware/cors"
-	"github.com/newrelic/go-agent/v3/newrelic"
-	"github.com/src/main/app/server/errors"
-
 	"github.com/ansrivas/fiberprometheus/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
 	"github.com/gofiber/swagger"
 )
-
-var routes []Route
 
 type Settings struct {
 	Recovery  bool
@@ -32,7 +26,6 @@ type Settings struct {
 	RequestID bool
 	Logger    bool
 	Cors      bool
-	NewRelic  bool
 	Metrics   bool
 }
 
@@ -48,10 +41,11 @@ type Route struct {
 }
 
 func (app *App) Start(addr string) error {
-	for _, route := range routes {
-		app.Add(route.Verb, route.Path, route.Action)
-	}
 	return app.Listen(addr)
+}
+
+func (app *App) Starter(listener net.Listener) error {
+	return app.Listener(listener)
 }
 
 func (app *App) Route(method, path string, handlers ...fiber.Handler) {
@@ -62,7 +56,7 @@ func New(config ...Settings) *App {
 	app := &App{
 		App: fiber.New(fiber.Config{
 			DisableStartupMessage: true,
-			ErrorHandler:          errors.ErrorHandler,
+			ErrorHandler:          ErrorHandler,
 		}),
 		config: Settings{
 			Recovery:  true,
@@ -70,7 +64,6 @@ func New(config ...Settings) *App {
 			RequestID: false,
 			Logger:    false,
 			Cors:      false,
-			NewRelic:  false,
 			Metrics:   false,
 		},
 	}
@@ -102,33 +95,12 @@ func New(config ...Settings) *App {
 	if app.config.Swagger {
 		if !env.IsLocal() {
 			app.Get("/swagger/*", swagger.New(swagger.Config{ // custom
-				URL: fmt.Sprintf("%s/swagger/doc.json",
-					properties.String("public")),
+				URL: fmt.Sprintf("%s/swagger/doc.json", properties.String("public")),
 			}))
 		} else {
 			app.Add(http.MethodGet, "/swagger/*", swagger.HandlerDefault)
 		}
 		log.Info("Swagger enabled")
-	}
-
-	if app.config.NewRelic && !env.IsLocal() {
-		newRelicLicense := properties.String("NEW_RELIC_LICENSE_KEY")
-		if !env.IsEmpty(newRelicLicense) {
-			nrApp, err := newrelic.NewApplication(
-				newrelic.ConfigAppName("app.name"),
-				newrelic.ConfigLicense(newRelicLicense),
-				newrelic.ConfigDebugLogger(os.Stdout),
-			)
-			if err != nil {
-				log.Fatalf("failed to load newrelic config %s", err)
-			}
-
-			app.Use(nrfiber.New(nrfiber.Config{
-				NewRelicApp: nrApp,
-			}))
-		} else {
-			log.Info("newrelic disabled, newrelic license key not found")
-		}
 	}
 
 	if app.config.Metrics {

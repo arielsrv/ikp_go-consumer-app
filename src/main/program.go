@@ -8,7 +8,6 @@ import (
 
 // @title Golang Template API
 // @description This is a sample golang template api. Have fun.
-// @host go-fiber-app.herokuapp.com
 // @basePath /
 // @version v1.
 func main() {

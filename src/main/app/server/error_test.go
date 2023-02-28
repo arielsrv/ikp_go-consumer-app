@@ -1,11 +1,12 @@
-package errors_test
+package server_test
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"testing"
 
-	"github.com/src/main/app/server/errors"
+	"github.com/src/main/app/server"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/assert"
@@ -13,7 +14,7 @@ import (
 )
 
 func TestNewError(t *testing.T) {
-	actual := errors.NewError(http.StatusInternalServerError, "nil reference")
+	actual := server.NewError(http.StatusInternalServerError, "nil reference")
 	assert.NotNil(t, actual)
 	assert.Equal(t, http.StatusInternalServerError, actual.StatusCode)
 	assert.Equal(t, "nil reference", actual.Error())
@@ -23,11 +24,11 @@ func TestErrorHandler(t *testing.T) {
 	app := fiber.New()
 	ctx := app.AcquireCtx(&fasthttp.RequestCtx{})
 	defer app.ReleaseCtx(ctx)
-	err := errors.ErrorHandler(ctx, errors.New("api server error"))
+	err := server.ErrorHandler(ctx, errors.New("api server error"))
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusInternalServerError, ctx.Context().Response.StatusCode())
 
-	var apiError errors.Error
+	var apiError server.Error
 	err = json.Unmarshal(ctx.Response().Body(), &apiError)
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusInternalServerError, apiError.StatusCode)
@@ -38,11 +39,11 @@ func TestErrorHandler_FiberError(t *testing.T) {
 	app := fiber.New()
 	ctx := app.AcquireCtx(&fasthttp.RequestCtx{})
 	defer app.ReleaseCtx(ctx)
-	err := errors.ErrorHandler(ctx, fiber.NewError(http.StatusInternalServerError, "api server error"))
+	err := server.ErrorHandler(ctx, fiber.NewError(http.StatusInternalServerError, "api server error"))
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusInternalServerError, ctx.Context().Response.StatusCode())
 
-	var apiError errors.Error
+	var apiError server.Error
 	err = json.Unmarshal(ctx.Response().Body(), &apiError)
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusInternalServerError, apiError.StatusCode)
@@ -53,11 +54,11 @@ func TestErrorHandler_ApiError(t *testing.T) {
 	app := fiber.New()
 	ctx := app.AcquireCtx(&fasthttp.RequestCtx{})
 	defer app.ReleaseCtx(ctx)
-	err := errors.ErrorHandler(ctx, errors.NewError(http.StatusInternalServerError, "api server error"))
+	err := server.ErrorHandler(ctx, server.NewError(http.StatusInternalServerError, "api server error"))
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusInternalServerError, ctx.Context().Response.StatusCode())
 
-	var apiError errors.Error
+	var apiError server.Error
 	err = json.Unmarshal(ctx.Response().Body(), &apiError)
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusInternalServerError, apiError.StatusCode)

@@ -42,16 +42,16 @@ func ProvideRestClients() *RESTClientFactory {
 					MaxIdleConnsPerHost: TryInt(fmt.Sprintf("rest.pool.%s.pool.size", name), DefaultPoolSize),
 				},
 			}
-			restPoolFactory.Add(restPool)
-			restPoolFactory.Register(name, restPool)
+			restPoolFactory.add(restPool)
+			restPoolFactory.register(name, restPool)
 		}
 
 		restClientFactory = RESTClientFactory{clients: map[string]*rest.RequestBuilder{}}
 		clientNames := getNamesInKeys(restClientPattern)
 		for _, name := range clientNames {
 			poolName := String(fmt.Sprintf("rest.client.%s.pool", name))
-			pool := restPoolFactory.GetPool(poolName)
-			restClientFactory.Register(name, pool)
+			pool := restPoolFactory.getPool(poolName)
+			restClientFactory.register(name, pool)
 		}
 	})
 
@@ -63,31 +63,23 @@ type RESTPoolFactory struct {
 	builders  map[string]*rest.RequestBuilder
 }
 
-func NewRESTPoolFactory() *RESTPoolFactory {
-	return &RESTPoolFactory{builders: map[string]*rest.RequestBuilder{}}
-}
-
-func (r *RESTPoolFactory) Add(rb *rest.RequestBuilder) {
+func (r *RESTPoolFactory) add(rb *rest.RequestBuilder) {
 	r.restPools = append(r.restPools, rb)
 }
 
-func (r *RESTPoolFactory) Register(name string, rb *rest.RequestBuilder) {
+func (r *RESTPoolFactory) register(name string, rb *rest.RequestBuilder) {
 	r.builders[name] = rb
 }
 
-func (r *RESTPoolFactory) GetPool(name string) *rest.RequestBuilder {
+func (r *RESTPoolFactory) getPool(name string) *rest.RequestBuilder {
 	return r.builders[name]
-}
-
-type RESTClient struct {
-	rest.RequestBuilder
 }
 
 type RESTClientFactory struct {
 	clients map[string]*rest.RequestBuilder
 }
 
-func (r *RESTClientFactory) Register(name string, restPool *rest.RequestBuilder) {
+func (r *RESTClientFactory) register(name string, restPool *rest.RequestBuilder) {
 	r.clients[name] = restPool
 }
 

@@ -50,6 +50,7 @@ func TestGetEnv_Prod(t *testing.T) {
 	actual := env.GetEnv()
 	assert.NotEmpty(t, actual)
 	assert.Equal(t, "prod", actual)
+	assert.True(t, env.IsProd())
 }
 
 func TestIsDev(t *testing.T) {

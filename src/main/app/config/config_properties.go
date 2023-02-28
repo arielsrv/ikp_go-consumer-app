@@ -5,6 +5,7 @@ import (
 	"os"
 	"path"
 	"runtime"
+	"strings"
 
 	"github.com/arielsrv/go-archaius"
 	"github.com/src/main/app/config/env"
@@ -18,7 +19,6 @@ const (
 
 func init() {
 	showWd()
-	log.Warn("trying to load config ...")
 	_, caller, _, _ := runtime.Caller(0)
 	root := path.Join(path.Dir(caller), "../../..")
 	err := os.Chdir(root)
@@ -62,7 +62,11 @@ func init() {
 		log.Fatal(err)
 	}
 
-	log.Warnf("ENV: %s, SCOPE: %s", environment, scope)
+	logLevel := String("log.level")
+	log.SetLogLevel(logLevel)
+	log.Infof("%s log level", strings.ToUpper(logLevel))
+
+	log.Infof("ENV: %s, SCOPE: %s", environment, scope)
 }
 
 func showWd() {

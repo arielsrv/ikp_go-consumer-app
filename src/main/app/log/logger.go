@@ -19,20 +19,16 @@ func init() {
 	// Output to stdout instead of the default stderr
 	// Can be any io.Writer, see below for File example
 	log.SetOutput(os.Stdout)
-
-	// Only log the warning severity or above.
-	log.SetLevel(log.InfoLevel)
 }
 
 type ILogger interface {
 	Info(v ...any)
 	Infof(format string, v ...any)
-	Warn(v ...any)
+	Debugf(format string, v ...any)
 	Warnf(format string, v ...any)
 	Error(v ...any)
 	Errorf(format string, v ...any)
 	Fatal(v ...any)
-	Fatalf(format string, v ...any)
 }
 
 var logger = &stdLogger{}
@@ -46,6 +42,10 @@ func (s stdLogger) Info(v ...any) {
 
 func (s stdLogger) Infof(format string, v ...any) {
 	log.Printf(format, v...)
+}
+
+func (s stdLogger) Debugf(format string, v ...any) {
+	log.Debugf(format, v...)
 }
 
 func (s stdLogger) Warn(v ...any) {
@@ -65,11 +65,16 @@ func (s stdLogger) Errorf(format string, v ...any) {
 }
 
 func (s stdLogger) Fatal(v ...any) {
-	log.Fatalln(v...)
+	log.Fatal(v...)
 }
 
-func (s stdLogger) Fatalf(format string, v ...any) {
-	log.Fatalf(format, v...)
+func (s stdLogger) SetLogLevel(value string) {
+	level, err := log.ParseLevel(value)
+	if err != nil {
+		log.SetLevel(log.InfoLevel)
+	} else {
+		log.SetLevel(level)
+	}
 }
 
 func Info(v ...any) {
@@ -80,8 +85,8 @@ func Infof(format string, v ...any) {
 	logger.Infof(format, v...)
 }
 
-func Warn(v ...any) {
-	logger.Warn(v...)
+func Debugf(format string, v ...any) {
+	logger.Debugf(format, v...)
 }
 
 func Warnf(format string, v ...any) {
@@ -100,6 +105,6 @@ func Fatal(v ...any) {
 	logger.Fatal(v...)
 }
 
-func Fatalf(format string, v ...any) {
-	logger.Fatalf(format, v...)
+func SetLogLevel(level string) {
+	logger.SetLogLevel(level)
 }

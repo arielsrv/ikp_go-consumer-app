@@ -20,8 +20,9 @@ type HTTPPusher struct {
 }
 
 type MessageDTO struct {
-	ID      string `json:"MessageId,omitempty"`
-	Message string `json:"message,omitempty"`
+	ID        string `json:"MessageId,omitempty"`
+	Message   string `json:"Message,omitempty"`
+	Timestamp string `json:"Timestamp,omitempty"`
 }
 
 func NewHTTPPusher(httpClient client.AppClient) *HTTPPusher {
@@ -41,17 +42,20 @@ func (h HTTPPusher) SendMessage(message *sqs.Message) error {
 	requestBody := new(client.RequestBody)
 	requestBody.ID = messageDTO.ID
 	requestBody.Msg = messageDTO.Message
+	requestBody.Timestamp = messageDTO.Timestamp
 
-	log.Infof("message - id: %s, body: %s", requestBody.ID, requestBody.Msg)
+	log.Warnf("[pushing]: message id: %s, msg: %s, timestamp: %s", requestBody.ID, requestBody.Msg, requestBody.Timestamp)
 
 	err = h.httpClient.PostMessage(requestBody)
 
 	if err != nil {
-		metrics.Collector.IncrementCounter("consumers.pusher.errors")
+		log.Errorf("[nack]   : message id: %s, msg: %s, timestamp: %s", requestBody.ID, requestBody.Msg, requestBody.Timestamp)
+		metrics.Collector.IncrementCounter(metrics.PusherError)
 		return err
 	}
 
-	metrics.Collector.IncrementCounter("consumers.pusher.success")
+	log.Infof("[ack]    : message id: %s, msg: %s, timestamp: %s", requestBody.ID, requestBody.Msg, requestBody.Timestamp)
+	metrics.Collector.IncrementCounter(metrics.PusherSuccess)
 
 	return nil
 }

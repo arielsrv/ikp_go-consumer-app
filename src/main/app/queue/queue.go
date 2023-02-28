@@ -2,6 +2,7 @@ package queue
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -11,7 +12,6 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"
@@ -22,27 +22,11 @@ type MessageClient interface {
 	Delete(ctx context.Context, receiptHandle string) error
 }
 
-type SendRequest struct {
-	QueueURL   string
-	Body       string
-	Attributes []Attribute
-}
-
-type Attribute struct {
-	Key   string
-	Value string
-	Type  string
-}
-
 type Client struct {
 	timeout time.Duration
 	sqsiface.SQSAPI
 	QueueURL string
 	MaxMsg   int64
-}
-
-type MockClient struct {
-	Client
 }
 
 type Config struct {
@@ -74,7 +58,7 @@ func NewClient(config Config) (*Client, error) {
 
 	if config.Parallel < 1 || config.Parallel > 10 {
 		log.Errorf("receive argument: parallel valid values: 1 to 10: given %d", config.Parallel)
-		return nil, err
+		return nil, errors.New("invalidad parallel value")
 	}
 
 	sqsClient := sqs.New(awsSession)
@@ -94,59 +78,16 @@ func NewClient(config Config) (*Client, error) {
 	}, nil
 }
 
-type MockSQS struct {
-	sqsiface.SQSAPI
-	messages map[string][]*sqs.Message
-}
-
-func NewTestClient(timeout time.Duration, queueURL string) Client {
-	return Client{
-		timeout: timeout,
-		SQSAPI: &MockSQS{
-			messages: map[string][]*sqs.Message{},
-		},
-		QueueURL: queueURL,
-	}
-}
-
-func (m *MockSQS) SendMessage(in *sqs.SendMessageInput) (*sqs.SendMessageOutput, error) {
-	m.messages[*in.QueueUrl] = append(m.messages[*in.QueueUrl], &sqs.Message{
-		Body:          in.MessageBody,
-		ReceiptHandle: aws.String("receipt-handle"),
-	})
-	return &sqs.SendMessageOutput{}, nil
-}
-
-func (m *MockSQS) ReceiveMessageWithContext(_ aws.Context, in *sqs.ReceiveMessageInput, _ ...request.Option) (*sqs.ReceiveMessageOutput, error) {
-	if len(m.messages[*in.QueueUrl]) == 0 {
-		return &sqs.ReceiveMessageOutput{}, nil
-	}
-	response := m.messages[*in.QueueUrl][0:1]
-	m.messages[*in.QueueUrl] = m.messages[*in.QueueUrl][1:]
-	return &sqs.ReceiveMessageOutput{
-		Messages: response,
-	}, nil
-}
-
-func (m *MockSQS) DeleteMessageWithContext(_ aws.Context, in *sqs.DeleteMessageInput, _ ...request.Option) (*sqs.DeleteMessageOutput, error) {
-	if len(m.messages[*in.QueueUrl]) == 0 {
-		return &sqs.DeleteMessageOutput{}, nil
-	}
-	return &sqs.DeleteMessageOutput{}, nil
-}
-
 func (s Client) Receive(ctx context.Context) ([]*sqs.Message, error) {
-	var waitTimeSeconds int64 = 10
+	var timeout = s.timeout + s.timeout/2
 
-	// Must always be above `WaitTimeSeconds` otherwise `ReceiveMessageWithContext`
-	// trigger context timeout error.
-	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(waitTimeSeconds+5))
+	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	receiveMessageOutput, err := s.ReceiveMessageWithContext(ctx, &sqs.ReceiveMessageInput{
 		QueueUrl:              aws.String(s.QueueURL),
 		MaxNumberOfMessages:   aws.Int64(s.MaxMsg),
-		WaitTimeSeconds:       aws.Int64(waitTimeSeconds),
+		WaitTimeSeconds:       aws.Int64(int64(s.timeout.Seconds())),
 		MessageAttributeNames: aws.StringSlice([]string{"All"}),
 	})
 	if err != nil {
