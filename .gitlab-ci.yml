@@ -1,0 +1,225 @@
+variables:
+  GO_VERSION: '1.20'
+  GOPRIVATE: gitlab.tiendanimal.com:8088,gitlab.tiendanimal.com
+  SEMVER_TOOLKIT_VERSION: latest
+  GITLAB_TOKEN: "${CICD_TOKEN}"
+  GIT_DEPTH: 0
+  SONAR_TOKEN: "${SQ_TOKEN}"
+  SONAR_HOST_URL: https://sonarqube.tooling.dp.iskaypet.com/
+  SONAR_PROJECT_KEY: "${CI_PROJECT_NAMESPACE}:${CI_PROJECT_NAME}"
+  AWS_EC2_METADATA_DISABLED: 'true'
+  AWS_SDK_LOAD_CONFIG: 'true'
+  AWS_REGION: eu-west-1
+  REGISTRY_URL: "${AWS_ECR_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+  REGISTRY_PATH: "${CI_PROJECT_PATH}"
+  CRANE_VERSION: v0.8.0
+  CODECOMMIT_HOST: git-codecommit.${AWS_REGION}.amazonaws.com
+  CODECOMMIT_REPO_DEV: dp-dev
+  CODECOMMIT_REPO_UAT: dp-uat
+  CODECOMMIT_REPO_PRO: dp-prod
+  CODECOMMIT_PROJECT_FOLDER: ''
+  CODECOMMIT_PATH: apps/${CODECOMMIT_PROJECT_FOLDER}/${CI_PROJECT_NAME}
+  ISKAYPET_PROXY: ''
+default:
+  tags:
+    - kubernetes-executor
+stages:
+  - test
+  - reports
+  - container
+  - image
+  - tagging
+  - deploy
+  - finish
+lint:test:
+  stage: test
+  image: registry.gitlab.com/gitlab-org/gitlab-build-images:golangci-lint-alpine
+  script:
+    - echo OK ...
+  artifacts:
+    reports:
+      codequality: gl-code-quality-report.json
+    paths:
+      - gl-code-quality-report.json
+  allow_failure: false
+  only:
+    - branches
+    - merge_requests
+unit:test:
+  stage: test
+  image: docker.io/golang:${GO_VERSION}
+  needs:
+    - lint:test
+  script:
+    - go install gotest.tools/gotestsum@latest
+    - gotestsum --junitfile report.xml --format testname
+  artifacts:
+    when: always
+    reports:
+      junit: report.xml
+  allow_failure: false
+  only:
+    - branches
+    - merge_requests
+unit:coverage:
+  stage: test
+  image: docker.io/golang:${GO_VERSION}
+  needs:
+    - unit:test
+  script:
+    - CGO_ENABLED=0 go test ./... -coverprofile=coverage-report.out
+    - go tool cover -html=coverage-report.out -o coverage-report.html
+    - go tool cover -func=coverage-report.out
+  artifacts:
+    paths:
+      - coverage-report.html
+  coverage: "/\\(statements\\)\\s+\\d+.?\\d+%/"
+  allow_failure: false
+  only:
+    - branches
+    - merge_requests
+sonar:
+  stage: reports
+  needs:
+    - lint:test
+    - unit:test
+    - unit:coverage
+  image:
+    name: docker.io/sonarsource/sonar-scanner-cli:latest
+    entrypoint:
+      - ''
+  script:
+    - echo OK ...
+  allow_failure: false
+  only:
+    - branches
+    - merge_requests
+git:tag:release:
+  stage: container
+  image: "${REGISTRY_URL}/iskaypet/digital/tools/ci/semver-toolkit:${SEMVER_TOOLKIT_VERSION}"
+  needs:
+    - sonar
+  resource_group: git
+  script:
+    - echo ${CI_PROJECT_DIR}
+    - echo ${REGISTRY_URL}
+    - echo ${REGISTRY_PATH}
+    - echo ${GIT_RELEASE_TAG}
+    - echo ${GO_VERSION}
+    - "/root/bin/gitlab-calculate-tags.sh"
+    - source ./semver-tags.env
+    - "/root/bin/gitlab-tag.sh ${GIT_RELEASE_TAG}"
+    - echo OK ...
+  artifacts:
+    reports:
+      dotenv: semver-tags.env
+  rules:
+    - if: ($CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH || $CI_COMMIT_BRANCH == "main" ||
+        $CI_PIPELINE_SOURCE == "web")
+      allow_failure: false
+ecr:create:repository:
+  stage: container
+  image: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
+  needs:
+    - sonar
+  script:
+    - echo OK ...
+  rules:
+    - if: ($CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH || $CI_COMMIT_BRANCH == "main" ||
+        $CI_PIPELINE_SOURCE == "web")
+      allow_failure: false
+ecr:build:image:
+  stage: image
+  needs:
+    - ecr:create:repository
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint:
+      - ''
+  script:
+    - echo ${CI_PROJECT_DIR}
+    - echo ${REGISTRY_URL}
+    - echo ${REGISTRY_PATH}
+    - echo ${GIT_RELEASE_TAG}
+    - echo ${GO_VERSION}
+    - echo OK ...
+  rules:
+    - if: ($CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH || $CI_COMMIT_BRANCH == "main" ||
+        $CI_PIPELINE_SOURCE == "web")
+      allow_failure: false
+dev:
+  stage: deploy
+  needs:
+    - git:tag:release
+    - ecr:tag:release:image
+  environment: dev
+  resource_group: dev
+  image:
+    name: k8s.gcr.io/kustomize/kustomize:v4.3.0
+    entrypoint:
+      - ''
+  script:
+    - echo OK ...
+  rules:
+    - if: ($CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH || $CI_COMMIT_BRANCH == "main")
+      allow_failure: false
+    - if: ($CI_PIPELINE_SOURCE == "web")
+      when: manual
+      allow_failure: false
+uat:
+  stage: deploy
+  needs:
+    - git:tag:release
+    - ecr:tag:release:image
+  environment: uat
+  resource_group: uat
+  image:
+    name: k8s.gcr.io/kustomize/kustomize:v4.3.0
+    entrypoint:
+      - ''
+  script:
+    - echo OK ...
+  when: manual
+  allow_failure: false
+  only:
+    - web
+pro:
+  stage: deploy
+  needs:
+    - git:tag:release
+    - ecr:tag:release:image
+  environment: pro
+  resource_group: pro
+  image:
+    name: k8s.gcr.io/kustomize/kustomize:v4.3.0
+    entrypoint:
+      - ''
+  script:
+    - echo OK ...
+  when: manual
+  allow_failure: false
+  only:
+    - web
+ecr:tag:release:image:
+  stage: tagging
+  needs:
+    - ecr:build:image
+  resource_group: ecr
+  image:
+    name: docker.io/amazon/aws-cli
+    entrypoint:
+      - ''
+  variables:
+    GIT_STRATEGY: none
+  script:
+    - echo ${CI_PROJECT_DIR}
+    - echo ${REGISTRY_URL}
+    - echo ${REGISTRY_PATH}
+    - echo ${GIT_RELEASE_TAG}
+    - echo ${GO_VERSION}
+    - echo OK ...
+  rules:
+    - if: ($CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH || $CI_COMMIT_BRANCH == "main" ||
+        $CI_PIPELINE_SOURCE == "web")
+      allow_failure: false
+

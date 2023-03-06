@@ -5,9 +5,9 @@ go 1.20
 require (
 	github.com/ansrivas/fiberprometheus/v2 v2.6.0
 	github.com/antonfisher/nested-logrus-formatter v1.3.1
-	github.com/arielsrv/go-archaius v0.0.4
+	github.com/arielsrv/go-archaius v0.0.7
 	github.com/arielsrv/ikp_go-restclient v0.0.2
-	github.com/aws/aws-sdk-go v1.44.213
+	github.com/aws/aws-sdk-go v1.44.214
 	github.com/gofiber/fiber/v2 v2.42.0
 	github.com/gofiber/swagger v0.1.9
 	github.com/prometheus/client_golang v1.14.0

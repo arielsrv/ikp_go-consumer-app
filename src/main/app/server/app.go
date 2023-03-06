@@ -30,7 +30,7 @@ type Settings struct {
 }
 
 type App struct {
-	*fiber.App
+	Server *fiber.App
 	config Settings
 }
 
@@ -41,20 +41,20 @@ type Route struct {
 }
 
 func (app *App) Start(addr string) error {
-	return app.Listen(addr)
+	return app.Server.Listen(addr)
 }
 
 func (app *App) Starter(listener net.Listener) error {
-	return app.Listener(listener)
+	return app.Server.Listener(listener)
 }
 
 func (app *App) Route(method, path string, handlers ...fiber.Handler) {
-	app.Add(method, path, handlers...)
+	app.Server.Add(method, path, handlers...)
 }
 
 func New(config ...Settings) *App {
 	app := &App{
-		App: fiber.New(fiber.Config{
+		Server: fiber.New(fiber.Config{
 			DisableStartupMessage: true,
 			ErrorHandler:          ErrorHandler,
 		}),
@@ -73,40 +73,41 @@ func New(config ...Settings) *App {
 	}
 
 	if app.config.Recovery {
-		app.Use(recover.New(recover.Config{
+		app.Server.Use(recover.New(recover.Config{
 			EnableStackTrace: true,
 		}))
 	}
 
 	if app.config.RequestID {
-		app.Use(requestid.New())
+		app.Server.Use(requestid.New())
 	}
 
 	if app.config.Logger {
-		app.Use(logger.New(logger.Config{
+		app.Server.Use(logger.New(logger.Config{
 			Format: "${pid} ${locals:requestid} ${status} - ${method} ${path}\n",
+			Output: log.GetWriter(),
 		}))
 	}
 
 	if app.config.Cors {
-		app.Use(cors.New())
+		app.Server.Use(cors.New())
 	}
 
 	if app.config.Swagger {
 		if !env.IsLocal() {
-			app.Get("/swagger/*", swagger.New(swagger.Config{ // custom
+			app.Server.Get("/swagger/*", swagger.New(swagger.Config{ // custom
 				URL: fmt.Sprintf("%s/swagger/doc.json", properties.String("public")),
 			}))
 		} else {
-			app.Add(http.MethodGet, "/swagger/*", swagger.HandlerDefault)
+			app.Server.Add(http.MethodGet, "/swagger/*", swagger.HandlerDefault)
 		}
-		log.Info("Swagger enabled")
+		log.Info("swagger enabled")
 	}
 
 	if app.config.Metrics {
 		prometheus := fiberprometheus.New(properties.String("app.name"))
-		prometheus.RegisterAt(app.App, "/metrics")
-		app.Use(prometheus.Middleware)
+		prometheus.RegisterAt(app.Server, "/metrics")
+		app.Server.Use(prometheus.Middleware)
 	}
 
 	return app

@@ -4,6 +4,8 @@ public: http://localhost:8080
 protocol: http
 host: 127.0.0.1
 port: 8080
+log:
+  level: debug
 
 # aws
 aws:
@@ -17,13 +19,13 @@ aws:
 queues:
   orders:
     name: orders-consumer
-    parallel: 2 # default is 2
-    timeout: 1000
+    parallel: 1 # default is  2
+    timeout: 2000 # ms
 
 # consumers
 consumers:
   orders:
-    workers: 10 # default is instances core - 1
+    workers: 2 # default is instances core - 1
 
 # pusher (your-app)
 pusher:
@@ -35,8 +37,8 @@ rest:
     default:
       pool:
         size: 20
-        timeout: 20000
-        connection-timeout: 50000
+        timeout: 20000            # ms
+        connection-timeout: 50000 # ms
   client:
     target-client:
       pool: default

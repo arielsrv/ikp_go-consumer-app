@@ -35,11 +35,11 @@ func (c HTTPPusherClient) PostMessage(requestBody *RequestBody) error {
 	response := c.rb.Post(c.targetEndpoint, requestBody)
 	elapsedTime := time.Since(startTime)
 
-	metrics.Collector.RecordExecutionTime(metrics.PusherHTTPTime, elapsedTime.Milliseconds())
+	metrics.Collector.RecordExecutionTime(metrics.PusherHTTPTime, elapsedTime)
 
 	if response.Err != nil {
 		var err net.Error
-		if ok := errors.As(response.Err, &err); ok && err.Timeout() {
+		if errors.As(response.Err, &err) && err.Timeout() {
 			log.Warnf("pusher timeout, discuss cap theorem, possible inconsistency ensure handle duplicates from target app, MessageId: %s", requestBody.ID)
 			metrics.Collector.IncrementCounter(metrics.PusherHTTPTimeout)
 		}

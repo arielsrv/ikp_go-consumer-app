@@ -16,8 +16,8 @@ import (
 )
 
 func TestApp_Start(t *testing.T) {
-	server := server.New()
-	routes.RegisterRoutes(server)
+	app := server.New()
+	routes.RegisterRoutes(app)
 
 	port := 6789
 
@@ -32,15 +32,15 @@ func TestApp_Start(t *testing.T) {
 		assert.NoError(t, response.Err)
 		assert.Equal(t, http.StatusOK, response.StatusCode)
 
-		err := server.App.Shutdown()
+		err := app.Server.Shutdown()
 		assert.NoError(t, err)
 	}()
 
-	assert.Nil(t, server.Start(fmt.Sprintf(":%d", port)))
+	assert.Nil(t, app.Start(fmt.Sprintf(":%d", port)))
 }
 
 func TestApp_Starter(t *testing.T) {
-	server := server.New(server.Settings{
+	app := server.New(server.Settings{
 		Recovery:  true,
 		Swagger:   true,
 		RequestID: true,
@@ -48,7 +48,7 @@ func TestApp_Starter(t *testing.T) {
 		Cors:      true,
 		Metrics:   true,
 	})
-	routes.RegisterRoutes(server)
+	routes.RegisterRoutes(app)
 
 	listener, err := net.Listen("tcp", ":0")
 	port := listener.Addr().(*net.TCPAddr).Port
@@ -70,19 +70,19 @@ func TestApp_Starter(t *testing.T) {
 		assert.NoError(t, response.Err)
 		assert.Equal(t, http.StatusOK, response.StatusCode)
 
-		err = server.App.Shutdown()
+		err = app.Server.Shutdown()
 		assert.NoError(t, err)
 	}()
 
-	assert.Nil(t, server.Starter(listener))
+	assert.Nil(t, app.Starter(listener))
 }
 
 func TestApp_StarterScope(t *testing.T) {
 	t.Setenv("SCOPE", "prod")
-	server := server.New(server.Settings{
+	app := server.New(server.Settings{
 		Swagger: true,
 	})
-	routes.RegisterRoutes(server)
+	routes.RegisterRoutes(app)
 
 	listener, err := net.Listen("tcp", ":0")
 	port := listener.Addr().(*net.TCPAddr).Port
@@ -100,9 +100,9 @@ func TestApp_StarterScope(t *testing.T) {
 		assert.NoError(t, response.Err)
 		assert.Equal(t, http.StatusOK, response.StatusCode)
 
-		err = server.App.Shutdown()
+		err = app.Server.Shutdown()
 		assert.NoError(t, err)
 	}()
 
-	assert.Nil(t, server.Starter(listener))
+	assert.Nil(t, app.Starter(listener))
 }

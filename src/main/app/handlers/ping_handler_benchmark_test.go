@@ -19,13 +19,13 @@ func BenchmarkPingHandler_Ping(b *testing.B) {
 	app := server.New(server.Settings{
 		Logger: false,
 	})
-	app.Add(http.MethodGet, "/ping", pingHandler.Ping)
+	app.Server.Add(http.MethodGet, "/ping", pingHandler.Ping)
 
 	pingService.On("Ping").Return("pong")
 
 	for i := 0; i < b.N; i++ {
 		request := httptest.NewRequest(http.MethodGet, "/ping", nil)
-		response, err := app.Test(request)
+		response, err := app.Server.Test(request)
 		if err != nil || response.StatusCode != http.StatusOK {
 			log.Infof("f[" + strconv.Itoa(i) + "] Status != OK (200)")
 		}

@@ -1,6 +1,8 @@
 package metrics
 
 import (
+	"time"
+
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/src/main/app/config"
 	"github.com/src/main/app/log"
@@ -112,7 +114,7 @@ func newMetricsCollector() *metricsCollector {
 	generic := prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name:        string(Generic),
-			Help:        "Generic counter. This is a fallback.",
+			Help:        "Generic counter. This is a fallback. Review your and metric.",
 			ConstLabels: labels,
 		},
 		[]string{"name"},
@@ -132,9 +134,10 @@ func (m metricsCollector) IncrementCounter(name Name) {
 	}
 }
 
-func (m metricsCollector) RecordExecutionTime(name Name, value int64) {
+func (m metricsCollector) RecordExecutionTime(name Name, value time.Duration) {
 	if summary, ok := summaries[string(name)]; ok {
-		summary.Observe(float64(value))
+		elapsedTime := float64(value.Nanoseconds()) / 1e9
+		summary.Observe(elapsedTime)
 	} else {
 		log.Warnf("missing time metric collector: %s", string(name))
 	}

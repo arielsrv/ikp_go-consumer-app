@@ -25,7 +25,7 @@ func (suite *PingHandlerSuite) SetupTest() {
 	suite.pingService = new(MockPingService)
 	suite.pingHandler = handlers.NewPingHandler(suite.pingService)
 	suite.app = server.New()
-	suite.app.Add(http.MethodGet, "/ping", suite.pingHandler.Ping)
+	suite.app.Server.Add(http.MethodGet, "/ping", suite.pingHandler.Ping)
 }
 
 func TestRunSuite(t *testing.T) {
@@ -45,7 +45,7 @@ func (suite *PingHandlerSuite) TestPingHandler_Ping() {
 	suite.pingService.On("Ping").Return("pong")
 
 	request := httptest.NewRequest(http.MethodGet, "/ping", nil)
-	response, err := suite.app.Test(request)
+	response, err := suite.app.Server.Test(request)
 	suite.NoError(err)
 	suite.NotNil(response)
 	suite.Equal(http.StatusOK, response.StatusCode)
