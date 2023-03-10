@@ -2,6 +2,10 @@
 version: '3'
 
 tasks:
+  lint:
+    desc: Use golangci-lint (.golangci.yml).
+    cmds:
+      - golangci-lint run --fix
   download:
     desc: Run go mod tidy.
     cmds:

@@ -1,17 +1,16 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
+	"examples/caching"
 	"flag"
-	"github.com/gofiber/fiber/v2"
-	"github.com/redis/go-redis/v9"
-	"gitlab.tiendanimal.com/iskaypet/orders-consumer/model"
 	"log"
 	"time"
-)
 
-var ctx = context.Background()
+	"examples/model"
+
+	"github.com/gofiber/fiber/v2"
+)
 
 func main() {
 	var timeout int
@@ -24,35 +23,30 @@ func main() {
 		EnablePrintRoutes:     true,
 	})
 
-	// @TODO: @apineiro replace by AWS Elastic Cache
-	keyValue := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
-		Password: "a300p011",
-		DB:       0,
-	})
+	appCache, err := caching.NewBuilder[string, model.MessageDTO]().
+		Size(100).
+		ExpireAfterWrite(time.Duration(5) * time.Minute).
+		Build()
 
 	app.Post("/orders-consumer", func(c *fiber.Ctx) error {
 		stringValue := string(c.Body())
 		var messageDTO model.MessageDTO
-		err := json.Unmarshal(c.Body(), &messageDTO)
+		err = json.Unmarshal(c.Body(), &messageDTO)
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		key := messageDTO.ID
 
-		value, err := keyValue.Exists(ctx, key).Result()
-		if err != nil {
-			log.Println(err)
-		}
+		value := appCache.GetIfPresent(key)
 
-		if value == 0 {
-			err = keyValue.Set(ctx, key, stringValue, time.Minute*time.Duration(30)).Err()
+		if value.IsNone() {
+			appCache.Put(key, messageDTO)
 			if err != nil {
 				log.Println(err)
 			}
 			time.Sleep(time.Millisecond * time.Duration(timeout))
-			log.Println(stringValue) // process the message
+			processMessage(stringValue, messageDTO)
 		} else {
 			return c.SendString(stringValue)
 		}
@@ -60,7 +54,20 @@ func main() {
 		return c.SendString(stringValue)
 	})
 
-	if err := app.Listen(":4000"); err != nil {
+	if err = app.Listen(":4000"); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func processMessage(stringValue string, messageDTO model.MessageDTO) {
+	log.Println(stringValue) // process the message
+	var orderDto model.OrderDTO
+	err := json.Unmarshal([]byte(messageDTO.Msg), &orderDto)
+	if err != nil {
+		log.Println(err)
+	}
+	log.Printf("GET api.iskaypet.com/orders/%d -> { customer_id: 123, products: [001, 002] }", orderDto.ID)
+	// log.Println("GET api.iskaypet.com/customers/123")
+	// log.Println("GET api.iskaypet.com/products/001")
+	// log.Println("GET api.iskaypet.com/products/002")
 }

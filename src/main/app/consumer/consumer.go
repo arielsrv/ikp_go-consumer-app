@@ -13,22 +13,27 @@ import (
 )
 
 type Consumer struct {
-	messageClient queue.MessageClient
-	pusher        pusher.Pusher
-	workers       int
+	messageClient  queue.MessageClient
+	pusher         pusher.Pusher
+	workers        int
+	handlerType    HandlerType
+	messageHandler *HandlerResolver
 }
 
 type Config struct {
 	MessageClient queue.MessageClient
 	Pusher        pusher.Pusher
 	Workers       int
+	HandlerType   HandlerType
 }
 
 func NewConsumer(config Config) Consumer {
 	return Consumer{
-		messageClient: config.MessageClient,
-		pusher:        config.Pusher,
-		workers:       config.Workers,
+		messageClient:  config.MessageClient,
+		pusher:         config.Pusher,
+		workers:        config.Workers,
+		handlerType:    config.HandlerType,
+		messageHandler: ProvideHandlerResolver(),
 	}
 }
 
@@ -61,24 +66,16 @@ func (c Consumer) worker(ctx context.Context, wg *sync.WaitGroup, workerID int) 
 			continue
 		}
 
-		if len(messages) != 0 {
-			c.iterateAndPopAsync(ctx, messages)
+		if !isEmpty(messages) {
+			c.messageHandler.
+				resolve(c.handlerType).
+				process(ctx, messages, c.pop)
 		}
 	}
 }
 
-func (c Consumer) iterateAndPopAsync(ctx context.Context, messages []*sqs.Message) {
-	wg := &sync.WaitGroup{}
-	wg.Add(len(messages))
-
-	for _, message := range messages {
-		go func(message *sqs.Message) {
-			defer wg.Done()
-			c.pop(ctx, message)
-		}(message)
-	}
-
-	wg.Wait()
+func isEmpty(messages []*sqs.Message) bool {
+	return len(messages) == 0
 }
 
 func (c Consumer) pop(ctx context.Context, message *sqs.Message) {

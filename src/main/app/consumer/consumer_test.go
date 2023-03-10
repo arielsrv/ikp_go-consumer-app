@@ -26,7 +26,7 @@ func (m *MockPusher) SendMessage(*sqs.Message) error {
 	return args.Error(0)
 }
 
-func TestNewConsumer(t *testing.T) {
+func TestNewConsumerAsync(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(500))
 	defer cancel()
 
@@ -52,7 +52,47 @@ func TestNewConsumer(t *testing.T) {
 		consumer.Config{
 			MessageClient: queueClient,
 			Pusher:        httpPusher,
-			Workers:       1}).
+			Workers:       1,
+			HandlerType:   consumer.Sync,
+		}).
+		Start(ctx)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, receiveMessageOutput)
+	assert.NotNil(t, receiveMessageOutput.Messages)
+	assert.NotNil(t, receiveMessageOutput.Messages[0])
+	assert.Equal(t, receiveMessageOutput.Messages[0].Body, types.String("Hello, world!"))
+}
+
+func TestNewConsumerSync(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(500))
+	defer cancel()
+
+	httpPusher := new(MockPusher)
+	httpPusher.On("SendMessage").Return(nil)
+
+	queueClient := queue.NewTestClient("https://queues.com/my-queue")
+	output, err := queueClient.SendMessage(&sqs.SendMessageInput{
+		MessageBody: aws.String("Hello, world!"),
+		QueueUrl:    aws.String("https://queues.com/my-queue"),
+	})
+	assert.NoError(t, err)
+	assert.NotNil(t, output)
+
+	receiveMessageOutput, err := queueClient.ReceiveMessageWithContext(ctx, &sqs.ReceiveMessageInput{
+		QueueUrl:              aws.String("https://queues.com/my-queue"),
+		MaxNumberOfMessages:   aws.Int64(int64(1)),
+		WaitTimeSeconds:       aws.Int64(10),
+		MessageAttributeNames: aws.StringSlice([]string{"All"}),
+	})
+
+	consumer.NewConsumer(
+		consumer.Config{
+			MessageClient: queueClient,
+			Pusher:        httpPusher,
+			Workers:       1,
+			HandlerType:   consumer.Async,
+		}).
 		Start(ctx)
 
 	assert.NoError(t, err)

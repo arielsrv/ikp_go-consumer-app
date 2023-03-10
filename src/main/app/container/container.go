@@ -53,7 +53,9 @@ func ProvideQueueConsumer() consumer.Consumer {
 		topicConsumer = consumer.NewConsumer(consumer.Config{
 			MessageClient: queueClient,
 			Pusher:        httpPusher,
-			Workers:       config.TryInt("consumers.orders.workers", runtime.NumCPU()-1)})
+			Workers:       config.TryInt("consumers.orders.workers", runtime.NumCPU()-1),
+			HandlerType:   consumer.Async,
+		})
 	})
 
 	return topicConsumer
