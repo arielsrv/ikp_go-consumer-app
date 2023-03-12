@@ -49,8 +49,8 @@ github.com/ansrivas/fiberprometheus/v2 v2.6.0 h1:QUaaKxil/N5IM1R19k6jsmFEJMfa4O3
 github.com/ansrivas/fiberprometheus/v2 v2.6.0/go.mod h1:hivZjKkqX04PPbMZNi9iGB0AQ90iN6RmKERiX1TdgTA=
 github.com/antonfisher/nested-logrus-formatter v1.3.1 h1:NFJIr+pzwv5QLHTPyKz9UMEoHck02Q9L0FP13b/xSbQ=
 github.com/antonfisher/nested-logrus-formatter v1.3.1/go.mod h1:6WTfyWFkBc9+zyBaKIqRrg/KwMqBbodBjgbHjDz7zjA=
-github.com/arielsrv/go-archaius v0.0.7 h1:Q8KGIP0Qm1J8mgoZjBsx4cYqdqXtoKOOTZV5LbKkbTU=
-github.com/arielsrv/go-archaius v0.0.7/go.mod h1:avp1fnXS+sPcf2fIftREmu73GouLYHaROnMF/ma7sRA=
+github.com/arielsrv/go-archaius v0.0.8 h1:nQ0FIiUBtNyKfK13Y8F8NSUSFJAvWgU8l4Tiu9ZyQ0s=
+github.com/arielsrv/go-archaius v0.0.8/go.mod h1:avp1fnXS+sPcf2fIftREmu73GouLYHaROnMF/ma7sRA=
 github.com/arielsrv/ikp_go-restclient v0.0.2 h1:0B62OeOWHm6lrKWCxPmiOwMHFVFDjrzqB4dy77XSwEE=
 github.com/arielsrv/ikp_go-restclient v0.0.2/go.mod h1:aAQKUOVjcFUUX5zjpNVbLH/q9IBR1CO3LTzcLJc7ZKo=
 github.com/aws/aws-sdk-go v1.44.219 h1:YOFxTUQZvdRzgwb6XqLFRwNHxoUdKBuunITC7IFhvbc=
