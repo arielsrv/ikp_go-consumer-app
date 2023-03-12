@@ -53,8 +53,8 @@ github.com/arielsrv/go-archaius v0.0.7 h1:Q8KGIP0Qm1J8mgoZjBsx4cYqdqXtoKOOTZV5Lb
 github.com/arielsrv/go-archaius v0.0.7/go.mod h1:avp1fnXS+sPcf2fIftREmu73GouLYHaROnMF/ma7sRA=
 github.com/arielsrv/ikp_go-restclient v0.0.2 h1:0B62OeOWHm6lrKWCxPmiOwMHFVFDjrzqB4dy77XSwEE=
 github.com/arielsrv/ikp_go-restclient v0.0.2/go.mod h1:aAQKUOVjcFUUX5zjpNVbLH/q9IBR1CO3LTzcLJc7ZKo=
-github.com/aws/aws-sdk-go v1.44.215 h1:K3KERfO6MaV349idub2w1u1H0R0KSkED0LshPnaAn3Q=
-github.com/aws/aws-sdk-go v1.44.215/go.mod h1:aVsgQcEevwlmQ7qHE9I3h+dtQgpqhFB+i8Phjh7fkwI=
+github.com/aws/aws-sdk-go v1.44.219 h1:YOFxTUQZvdRzgwb6XqLFRwNHxoUdKBuunITC7IFhvbc=
+github.com/aws/aws-sdk-go v1.44.219/go.mod h1:aVsgQcEevwlmQ7qHE9I3h+dtQgpqhFB+i8Phjh7fkwI=
 github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=
 github.com/beorn7/perks v1.0.0/go.mod h1:KWe93zE9D1o94FZ5RNwFwVgaQK1VOXiVxmqh+CedLV8=
 github.com/beorn7/perks v1.0.1 h1:VlbKKnNfV8bJzeqoa4cOKqO6bYr3WgKZxO8Z16+hsOM=
