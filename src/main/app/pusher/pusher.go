@@ -3,16 +3,16 @@ package pusher
 import (
 	"encoding/json"
 
+	"github.com/src/main/app/queue"
+
 	"github.com/src/main/app/log"
 	"github.com/src/main/app/metrics"
 
 	"github.com/src/main/app/client"
-
-	"github.com/aws/aws-sdk-go/service/sqs"
 )
 
 type Pusher interface {
-	SendMessage(message *sqs.Message) error
+	SendMessage(message *queue.MessageDTO) error
 }
 
 type HTTPPusher struct {
@@ -31,9 +31,9 @@ func NewHTTPPusher(httpClient client.AppClient) *HTTPPusher {
 	}
 }
 
-func (h HTTPPusher) SendMessage(message *sqs.Message) error {
+func (h HTTPPusher) SendMessage(message *queue.MessageDTO) error {
 	var messageDTO MessageDTO
-	err := json.Unmarshal([]byte(*message.Body), &messageDTO)
+	err := json.Unmarshal([]byte(message.Body), &messageDTO)
 	if err != nil {
 		log.Error(err)
 		return err
@@ -49,7 +49,11 @@ func (h HTTPPusher) SendMessage(message *sqs.Message) error {
 	err = h.httpClient.PostMessage(requestBody)
 
 	if err != nil {
-		log.Errorf("[nack]   : message id: %s, msg: %s, timestamp: %s", requestBody.ID, requestBody.Msg, requestBody.Timestamp)
+		log.Errorf("[nack]   : message id: %s, msg: %s, timestamp: %s",
+			requestBody.ID,
+			requestBody.Msg,
+			requestBody.Timestamp)
+
 		metrics.Collector.IncrementCounter(metrics.PusherError)
 		return err
 	}

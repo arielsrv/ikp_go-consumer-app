@@ -53,7 +53,7 @@ func TestNewFakeClient(t *testing.T) {
 	assert.Len(t, actual, 1)
 	assert.NotNil(t, actual[0])
 	assert.NotNil(t, actual[0].Body)
-	assert.Equal(t, *actual[0].Body, "Hello, world!")
+	assert.Equal(t, actual[0].Body, "Hello, world!")
 }
 
 func TestNewFakeClientEmpty(t *testing.T) {
@@ -83,12 +83,12 @@ func TestNewClientDelete(t *testing.T) {
 	assert.Len(t, actual, 1)
 	assert.NotNil(t, actual[0])
 	assert.NotNil(t, actual[0].Body)
-	assert.Equal(t, *actual[0].Body, "Hello, world!")
+	assert.Equal(t, actual[0].Body, "Hello, world!")
 
-	err = queueClient.Delete(context.Background(), *actual[0].ReceiptHandle)
+	err = queueClient.Delete(context.Background(), actual[0].ReceiptHandle)
 	assert.NoError(t, err)
 
-	err = queueClient.Delete(context.Background(), *actual[0].ReceiptHandle)
+	err = queueClient.Delete(context.Background(), actual[0].ReceiptHandle)
 	assert.Error(t, err)
 }
 
@@ -118,9 +118,9 @@ func TestNewClientDelete_NotFound(t *testing.T) {
 	assert.Len(t, actual, 1)
 	assert.NotNil(t, actual[0])
 	assert.NotNil(t, actual[0].Body)
-	assert.Equal(t, *actual[0].Body, "Hello, world!")
+	assert.Equal(t, actual[0].Body, "Hello, world!")
 
-	err = queueClient.Delete(context.Background(), *actual[0].ReceiptHandle)
+	err = queueClient.Delete(context.Background(), actual[0].ReceiptHandle)
 	assert.NoError(t, err)
 
 	err = queueClient.Delete(context.Background(), "not found message")

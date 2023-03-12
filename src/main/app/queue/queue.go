@@ -18,7 +18,7 @@ import (
 )
 
 type MessageClient interface {
-	Receive(ctx context.Context) ([]*sqs.Message, error)
+	Receive(ctx context.Context) ([]MessageDTO, error)
 	Delete(ctx context.Context, receiptHandle string) error
 }
 
@@ -29,6 +29,11 @@ type Client struct {
 	MaxMsg   int64
 }
 
+type MessageDTO struct {
+	Body          string
+	ReceiptHandle string
+}
+
 type Config struct {
 	QueueName string
 	Parallel  int
@@ -36,6 +41,11 @@ type Config struct {
 }
 
 func NewClient(config Config) (*Client, error) {
+	if config.Parallel < 1 || config.Parallel > 10 {
+		log.Errorf("receive argument: parallel valid values: 1 to 10: given %d", config.Parallel)
+		return nil, errors.New("invalidad parallel value")
+	}
+
 	awsSession, err := session.NewSessionWithOptions(
 		session.Options{
 			Config: aws.Config{
@@ -56,11 +66,6 @@ func NewClient(config Config) (*Client, error) {
 		return nil, err
 	}
 
-	if config.Parallel < 1 || config.Parallel > 10 {
-		log.Errorf("receive argument: parallel valid values: 1 to 10: given %d", config.Parallel)
-		return nil, errors.New("invalidad parallel value")
-	}
-
 	sqsClient := sqs.New(awsSession)
 	responseQueueURL, err := sqsClient.GetQueueUrl(&sqs.GetQueueUrlInput{
 		QueueName: types.String(config.QueueName),
@@ -78,10 +83,10 @@ func NewClient(config Config) (*Client, error) {
 	}, nil
 }
 
-func (s Client) Receive(ctx context.Context) ([]*sqs.Message, error) {
-	var timeout = s.timeout + s.timeout/2
+func (s Client) Receive(ctx context.Context) ([]MessageDTO, error) {
+	var ctxTimeout = s.timeout + s.timeout/2
 
-	ctx, cancel := context.WithTimeout(ctx, timeout)
+	ctx, cancel := context.WithTimeout(ctx, ctxTimeout)
 	defer cancel()
 
 	receiveMessageOutput, err := s.ReceiveMessageWithContext(ctx, &sqs.ReceiveMessageInput{
@@ -94,7 +99,15 @@ func (s Client) Receive(ctx context.Context) ([]*sqs.Message, error) {
 		return nil, fmt.Errorf("receive: %w", err)
 	}
 
-	return receiveMessageOutput.Messages, nil
+	var messages []MessageDTO
+	for _, message := range receiveMessageOutput.Messages {
+		messageDTO := new(MessageDTO)
+		messageDTO.Body = types.StringValue(message.Body)
+		messageDTO.ReceiptHandle = types.StringValue(message.ReceiptHandle)
+		messages = append(messages, *messageDTO)
+	}
+
+	return messages, nil
 }
 
 func (s Client) Delete(ctx context.Context, receiptHandle string) error {

@@ -34,7 +34,11 @@ func (m *MockSQS) SendMessage(in *sqs.SendMessageInput) (*sqs.SendMessageOutput,
 	return &sqs.SendMessageOutput{}, nil
 }
 
-func (m *MockSQS) ReceiveMessageWithContext(_ aws.Context, in *sqs.ReceiveMessageInput, _ ...request.Option) (*sqs.ReceiveMessageOutput, error) {
+func (m *MockSQS) ReceiveMessageWithContext(
+	_ aws.Context,
+	in *sqs.ReceiveMessageInput,
+	_ ...request.Option,
+) (*sqs.ReceiveMessageOutput, error) {
 	if len(m.messages[*in.QueueUrl]) == 0 {
 		return &sqs.ReceiveMessageOutput{}, nil
 	}
@@ -44,7 +48,11 @@ func (m *MockSQS) ReceiveMessageWithContext(_ aws.Context, in *sqs.ReceiveMessag
 	}, nil
 }
 
-func (m *MockSQS) DeleteMessageWithContext(_ aws.Context, in *sqs.DeleteMessageInput, _ ...request.Option) (*sqs.DeleteMessageOutput, error) {
+func (m *MockSQS) DeleteMessageWithContext(
+	_ aws.Context,
+	in *sqs.DeleteMessageInput,
+	_ ...request.Option,
+) (*sqs.DeleteMessageOutput, error) {
 	if len(m.messages[*in.QueueUrl]) == 0 {
 		return nil, errors.New("empty queue")
 	}

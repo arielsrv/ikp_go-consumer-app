@@ -3,15 +3,14 @@ package pusher_test
 import (
 	"testing"
 
-	"github.com/src/main/app/server"
+	"github.com/src/main/app/queue"
 
-	"github.com/src/main/app/helpers/types"
+	"github.com/src/main/app/server"
 
 	"github.com/src/main/app/client"
 
 	"github.com/src/main/app/pusher"
 
-	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -31,8 +30,8 @@ func TestHttpPusher_SendMessage(t *testing.T) {
 
 	httpClient.On("PostMessage").Return(nil)
 
-	message := new(sqs.Message)
-	message.Body = types.String("{\"MessageId\":\"123\", \"Message\": \"Hello world\"}")
+	message := new(queue.MessageDTO)
+	message.Body = "{\"MessageId\":\"123\", \"Message\": \"Hello world\"}"
 
 	err := httpPusher.SendMessage(message)
 	assert.NoError(t, err)
@@ -44,8 +43,8 @@ func TestHttpPusher_SendMessageErr(t *testing.T) {
 
 	httpClient.On("PostMessage").Return(server.NewError(504, "gateway timeout"))
 
-	message := new(sqs.Message)
-	message.Body = types.String("{\"MessageId\":\"123\", \"Message\": \"Hello world\"}")
+	message := new(queue.MessageDTO)
+	message.Body = "{\"MessageId\":\"123\", \"Message\": \"Hello world\"}"
 
 	err := httpPusher.SendMessage(message)
 	assert.Error(t, err)
@@ -57,8 +56,8 @@ func TestHttpPusher_SendMessageParsingErr(t *testing.T) {
 
 	httpClient.On("PostMessage").Return(server.NewError(504, "gateway timeout"))
 
-	message := new(sqs.Message)
-	message.Body = types.String("invalid message")
+	message := new(queue.MessageDTO)
+	message.Body = "invalid message"
 
 	err := httpPusher.SendMessage(message)
 	assert.Error(t, err)

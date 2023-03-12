@@ -36,8 +36,10 @@ func ProvideRestClients() *RESTClientFactory {
 		poolNames := getNamesInKeys(restPoolPattern)
 		for _, name := range poolNames {
 			restPool := &rest.RequestBuilder{
-				Timeout:        time.Millisecond * time.Duration(TryInt(fmt.Sprintf("rest.pool.%s.pool.timeout", name), DefaultPoolTimeout)),
-				ConnectTimeout: time.Millisecond * time.Duration(TryInt(fmt.Sprintf("rest.pool.%s.pool.connection-timeout", name), DefaultSocketTimeout)),
+				Timeout: time.Millisecond *
+					time.Duration(TryInt(fmt.Sprintf("rest.pool.%s.pool.timeout", name), DefaultPoolTimeout)),
+				ConnectTimeout: time.Millisecond *
+					time.Duration(TryInt(fmt.Sprintf("rest.pool.%s.pool.connection-timeout", name), DefaultSocketTimeout)),
 				CustomPool: &rest.CustomPool{
 					MaxIdleConnsPerHost: TryInt(fmt.Sprintf("rest.pool.%s.pool.size", name), DefaultPoolSize),
 				},

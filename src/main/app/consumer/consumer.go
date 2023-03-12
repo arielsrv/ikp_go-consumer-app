@@ -8,32 +8,49 @@ import (
 
 	"github.com/src/main/app/queue"
 
-	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/src/main/app/pusher"
 )
 
 type Consumer struct {
-	messageClient  queue.MessageClient
-	pusher         pusher.Pusher
-	workers        int
-	handlerType    HandlerType
-	messageHandler *HandlerResolver
+	messageClient    queue.MessageClient
+	pusher           pusher.Pusher
+	workers          int
+	taskResolverType TaskResolverType
+	taskResolver     *TaskResolver[queue.MessageDTO]
 }
 
 type Config struct {
-	MessageClient queue.MessageClient
-	Pusher        pusher.Pusher
-	Workers       int
-	HandlerType   HandlerType
+	MessageClient    queue.MessageClient
+	Pusher           pusher.Pusher
+	Workers          int
+	TaskResolverType TaskResolverType
+}
+
+var (
+	instance     sync.Once
+	taskResolver = &TaskResolver[queue.MessageDTO]{
+		handlers: make(map[string]ElementHandler[queue.MessageDTO]),
+	}
+)
+
+func ProvideTaskResolver() *TaskResolver[queue.MessageDTO] {
+	instance.Do(func() {
+		taskResolver = &TaskResolver[queue.MessageDTO]{
+			handlers: make(map[string]ElementHandler[queue.MessageDTO]),
+		}
+		taskResolver.handlers[string(Sync)] = &syncHandler[queue.MessageDTO]{}
+		taskResolver.handlers[string(Async)] = &asyncHandler[queue.MessageDTO]{}
+	})
+	return taskResolver
 }
 
 func NewConsumer(config Config) Consumer {
 	return Consumer{
-		messageClient:  config.MessageClient,
-		pusher:         config.Pusher,
-		workers:        config.Workers,
-		handlerType:    config.HandlerType,
-		messageHandler: ProvideHandlerResolver(),
+		messageClient:    config.MessageClient,
+		pusher:           config.Pusher,
+		workers:          config.Workers,
+		taskResolverType: config.TaskResolverType,
+		taskResolver:     ProvideTaskResolver(),
 	}
 }
 
@@ -41,7 +58,7 @@ func (c Consumer) Start(ctx context.Context) {
 	wg := &sync.WaitGroup{}
 	wg.Add(c.workers)
 
-	for i := 1; i <= c.workers; i++ {
+	for i := 0; i < c.workers; i++ {
 		go c.worker(ctx, wg, i)
 	}
 
@@ -67,25 +84,25 @@ func (c Consumer) worker(ctx context.Context, wg *sync.WaitGroup, workerID int) 
 		}
 
 		if !isEmpty(messages) {
-			c.messageHandler.
-				resolve(c.handlerType).
-				process(ctx, messages, c.pop)
+			c.taskResolver.
+				Resolve(c.taskResolverType).
+				Process(ctx, messages, c.sendAndDelete)
 		}
 	}
 }
 
-func isEmpty(messages []*sqs.Message) bool {
+func isEmpty(messages []queue.MessageDTO) bool {
 	return len(messages) == 0
 }
 
-func (c Consumer) pop(ctx context.Context, message *sqs.Message) {
+func (c Consumer) sendAndDelete(ctx context.Context, message *queue.MessageDTO) {
 	err := c.pusher.SendMessage(message)
 	if err != nil {
-		log.Errorf("pusher error: %s, msg: %s\n", err.Error(), *message.Body)
+		log.Errorf("pusher error: %s, msg: %s\n", err.Error(), message.Body)
 	} else {
-		err = c.messageClient.Delete(ctx, *message.ReceiptHandle)
+		err = c.messageClient.Delete(ctx, message.ReceiptHandle)
 		if err != nil {
-			log.Errorf("delete error: %s, msg: %s\n", err.Error(), *message.Body)
+			log.Errorf("delete error: %s, msg: %s\n", err.Error(), message.Body)
 		}
 	}
 }

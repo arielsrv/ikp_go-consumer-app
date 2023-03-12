@@ -21,7 +21,7 @@ type MockPusher struct {
 	mock.Mock
 }
 
-func (m *MockPusher) SendMessage(*sqs.Message) error {
+func (m *MockPusher) SendMessage(*queue.MessageDTO) error {
 	args := m.Called()
 	return args.Error(0)
 }
@@ -50,10 +50,10 @@ func TestNewConsumerAsync(t *testing.T) {
 
 	consumer.NewConsumer(
 		consumer.Config{
-			MessageClient: queueClient,
-			Pusher:        httpPusher,
-			Workers:       1,
-			HandlerType:   consumer.Sync,
+			MessageClient:    queueClient,
+			Pusher:           httpPusher,
+			Workers:          1,
+			TaskResolverType: consumer.Sync,
 		}).
 		Start(ctx)
 
@@ -88,10 +88,10 @@ func TestNewConsumerSync(t *testing.T) {
 
 	consumer.NewConsumer(
 		consumer.Config{
-			MessageClient: queueClient,
-			Pusher:        httpPusher,
-			Workers:       1,
-			HandlerType:   consumer.Async,
+			MessageClient:    queueClient,
+			Pusher:           httpPusher,
+			Workers:          1,
+			TaskResolverType: consumer.Async,
 		}).
 		Start(ctx)
 

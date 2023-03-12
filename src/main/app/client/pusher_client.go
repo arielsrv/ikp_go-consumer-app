@@ -40,7 +40,8 @@ func (c HTTPPusherClient) PostMessage(requestBody *RequestBody) error {
 	if response.Err != nil {
 		var err net.Error
 		if errors.As(response.Err, &err) && err.Timeout() {
-			log.Warnf("pusher timeout, discuss cap theorem, possible inconsistency ensure handle duplicates from target app, MessageId: %s", requestBody.ID)
+			log.Warnf("pusher timeout, discuss cap theorem, possible inconsistency ensure handle duplicates from target app, "+
+				"MessageId: %s", requestBody.ID)
 			metrics.Collector.IncrementCounter(metrics.PusherHTTPTimeout)
 		}
 		return response.Err

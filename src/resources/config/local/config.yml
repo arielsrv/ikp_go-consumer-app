@@ -20,7 +20,7 @@ queues:
   orders:
     name: orders-consumer
     parallel: 1 # default is  2
-    timeout: 2000 # ms
+    timeout: 1000 # ms
 
 # consumers
 consumers:
