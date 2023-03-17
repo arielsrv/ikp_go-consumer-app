@@ -51,8 +51,8 @@ github.com/antonfisher/nested-logrus-formatter v1.3.1 h1:NFJIr+pzwv5QLHTPyKz9UME
 github.com/antonfisher/nested-logrus-formatter v1.3.1/go.mod h1:6WTfyWFkBc9+zyBaKIqRrg/KwMqBbodBjgbHjDz7zjA=
 github.com/arielsrv/go-archaius v0.0.8 h1:nQ0FIiUBtNyKfK13Y8F8NSUSFJAvWgU8l4Tiu9ZyQ0s=
 github.com/arielsrv/go-archaius v0.0.8/go.mod h1:avp1fnXS+sPcf2fIftREmu73GouLYHaROnMF/ma7sRA=
-github.com/arielsrv/ikp_go-restclient v0.0.3 h1:GTXsyLuuRSje3K8BsfNBXCG0JLZrgBfpWE5qicNr7gw=
-github.com/arielsrv/ikp_go-restclient v0.0.3/go.mod h1:aAQKUOVjcFUUX5zjpNVbLH/q9IBR1CO3LTzcLJc7ZKo=
+github.com/arielsrv/ikp_go-restclient v0.0.5 h1:s1y22Q74vyRNicz5l/x12NtFVlgTBZEIxPJlVfoIWjI=
+github.com/arielsrv/ikp_go-restclient v0.0.5/go.mod h1:aAQKUOVjcFUUX5zjpNVbLH/q9IBR1CO3LTzcLJc7ZKo=
 github.com/aws/aws-sdk-go v1.44.219 h1:YOFxTUQZvdRzgwb6XqLFRwNHxoUdKBuunITC7IFhvbc=
 github.com/aws/aws-sdk-go v1.44.219/go.mod h1:aVsgQcEevwlmQ7qHE9I3h+dtQgpqhFB+i8Phjh7fkwI=
 github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=
