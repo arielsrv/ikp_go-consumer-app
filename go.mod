@@ -6,7 +6,7 @@ require (
 	github.com/ansrivas/fiberprometheus/v2 v2.6.0
 	github.com/antonfisher/nested-logrus-formatter v1.3.1
 	github.com/arielsrv/go-archaius v0.0.8
-	github.com/arielsrv/ikp_go-restclient v0.0.3
+	github.com/arielsrv/ikp_go-restclient v0.0.5
 	github.com/aws/aws-sdk-go v1.44.219
 	github.com/gofiber/fiber/v2 v2.42.0
 	github.com/gofiber/swagger v0.1.9
