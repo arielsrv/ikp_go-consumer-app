@@ -5,13 +5,12 @@ import (
 	"sync"
 
 	"github.com/src/main/app/client"
-	"github.com/src/main/app/log"
-	"github.com/src/main/app/pusher"
-	"github.com/src/main/app/queue"
-
 	"github.com/src/main/app/config"
 	"github.com/src/main/app/consumer"
 	"github.com/src/main/app/handlers"
+	"github.com/src/main/app/log"
+	"github.com/src/main/app/pusher"
+	"github.com/src/main/app/queue"
 	"github.com/src/main/app/services"
 )
 

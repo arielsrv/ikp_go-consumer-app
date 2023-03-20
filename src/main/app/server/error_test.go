@@ -6,9 +6,8 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/src/main/app/server"
-
 	"github.com/gofiber/fiber/v2"
+	"github.com/src/main/app/server"
 	"github.com/stretchr/testify/assert"
 	"github.com/valyala/fasthttp"
 )

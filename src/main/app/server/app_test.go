@@ -7,12 +7,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/src/main/app/routes"
-
 	"github.com/arielsrv/ikp_go-restclient/rest"
-	"github.com/stretchr/testify/assert"
-
+	"github.com/src/main/app/routes"
 	"github.com/src/main/app/server"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestApp_Start(t *testing.T) {

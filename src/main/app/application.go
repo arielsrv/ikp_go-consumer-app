@@ -4,13 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/src/main/app/container"
-	"github.com/src/main/app/routes"
-
 	"github.com/src/main/app/config"
 	"github.com/src/main/app/config/env"
+	"github.com/src/main/app/container"
 	"github.com/src/main/app/log"
-
+	"github.com/src/main/app/routes"
 	"github.com/src/main/app/server"
 )
 

@@ -3,6 +3,8 @@ package metrics
 import (
 	"time"
 
+	"github.com/ugurcsen/gods-generic/maps/hashmap"
+
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/src/main/app/config"
 	"github.com/src/main/app/log"
@@ -28,8 +30,8 @@ const (
 
 var (
 	Collector         = newMetricsCollector()
-	counters          = make(map[string]prometheus.Counter)
-	summaries         = make(map[string]prometheus.Summary)
+	counters          = hashmap.New[Name, prometheus.Counter]()
+	summaries         = hashmap.New[Name, prometheus.Summary]()
 	genericCounter    *prometheus.CounterVec
 	namespace, labels = "consumers", prometheus.Labels{
 		"env":   config.String("app.env"),
@@ -50,7 +52,7 @@ func newMetricsCollector() *metricsCollector {
 		},
 	)
 	prometheus.MustRegister(pusherSuccess)
-	counters[string(PusherSuccess)] = pusherSuccess
+	counters.Put(PusherSuccess, pusherSuccess)
 
 	pusherErrors := prometheus.NewCounter(
 		prometheus.CounterOpts{
@@ -60,7 +62,7 @@ func newMetricsCollector() *metricsCollector {
 		},
 	)
 	prometheus.MustRegister(pusherErrors)
-	counters[string(PusherError)] = pusherErrors
+	counters.Put(PusherError, pusherErrors)
 
 	pusher20x := prometheus.NewCounter(
 		prometheus.CounterOpts{
@@ -70,7 +72,7 @@ func newMetricsCollector() *metricsCollector {
 		},
 	)
 	prometheus.MustRegister(pusher20x)
-	counters[string(PusherStatusOK)] = pusher20x
+	counters.Put(PusherStatusOK, pusher20x)
 
 	pusher40x := prometheus.NewCounter(
 		prometheus.CounterOpts{
@@ -80,7 +82,7 @@ func newMetricsCollector() *metricsCollector {
 		},
 	)
 	prometheus.MustRegister(pusher40x)
-	counters[string(PusherStatus40x)] = pusher40x
+	counters.Put(PusherStatus40x, pusher40x)
 
 	pusher50x := prometheus.NewCounter(
 		prometheus.CounterOpts{
@@ -90,7 +92,7 @@ func newMetricsCollector() *metricsCollector {
 		},
 	)
 	prometheus.MustRegister(pusher50x)
-	counters[string(PusherStatus50x)] = pusher50x
+	counters.Put(PusherStatus50x, pusher50x)
 
 	client := prometheus.NewSummary(prometheus.SummaryOpts{
 		Namespace:   namespace,
@@ -99,7 +101,7 @@ func newMetricsCollector() *metricsCollector {
 		ConstLabels: labels,
 	})
 	prometheus.MustRegister(client)
-	summaries[string(PusherHTTPTime)] = client
+	summaries.Put(PusherHTTPTime, client)
 
 	pusherTimeout := prometheus.NewCounter(
 		prometheus.CounterOpts{
@@ -109,7 +111,7 @@ func newMetricsCollector() *metricsCollector {
 		},
 	)
 	prometheus.MustRegister(pusherTimeout)
-	counters[string(PusherHTTPTimeout)] = pusherTimeout
+	counters.Put(PusherHTTPTimeout, pusherTimeout)
 
 	generic := prometheus.NewCounterVec(
 		prometheus.CounterOpts{
@@ -126,7 +128,7 @@ func newMetricsCollector() *metricsCollector {
 }
 
 func (m metricsCollector) IncrementCounter(name Name) {
-	if counter, ok := counters[string(name)]; ok {
+	if counter, ok := counters.Get(name); ok {
 		counter.Inc()
 	} else {
 		log.Warnf("missing metric collector %s, fallback to generic metric collector", name)
@@ -135,7 +137,7 @@ func (m metricsCollector) IncrementCounter(name Name) {
 }
 
 func (m metricsCollector) RecordExecutionTime(name Name, value time.Duration) {
-	if summary, ok := summaries[string(name)]; ok {
+	if summary, ok := summaries.Get(name); ok {
 		elapsedTime := float64(value.Nanoseconds()) / 1e9
 		summary.Observe(elapsedTime)
 	} else {

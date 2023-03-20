@@ -4,12 +4,10 @@ import (
 	"context"
 	"testing"
 
-	"github.com/src/main/app/config"
-
-	"github.com/src/main/app/queue"
-
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/sqs"
+	"github.com/src/main/app/config"
+	"github.com/src/main/app/queue"
 	"github.com/stretchr/testify/assert"
 )
 

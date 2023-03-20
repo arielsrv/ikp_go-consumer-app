@@ -7,21 +7,13 @@ import (
 	"testing"
 
 	"github.com/src/main/app/log"
-
+	"github.com/src/main/app/routes"
 	"github.com/src/main/app/server"
-
-	"github.com/src/main/app/handlers"
 )
 
 func BenchmarkPingHandler_Ping(b *testing.B) {
-	pingService := new(MockPingService)
-	pingHandler := handlers.NewPingHandler(pingService)
-	app := server.New(server.Settings{
-		Logger: false,
-	})
-	app.Server.Add(http.MethodGet, "/ping", pingHandler.Ping)
-
-	pingService.On("Ping").Return("pong")
+	app := server.New()
+	routes.RegisterRoutes(app)
 
 	for i := 0; i < b.N; i++ {
 		request := httptest.NewRequest(http.MethodGet, "/ping", nil)

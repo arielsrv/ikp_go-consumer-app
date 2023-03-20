@@ -5,7 +5,6 @@ import (
 	"os"
 
 	nested "github.com/antonfisher/nested-logrus-formatter"
-
 	"github.com/sirupsen/logrus"
 )
 

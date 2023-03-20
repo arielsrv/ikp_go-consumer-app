@@ -6,12 +6,10 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/src/main/app/log"
-	"github.com/src/main/app/server"
-
-	"github.com/src/main/app/metrics"
-
 	"github.com/arielsrv/ikp_go-restclient/rest"
+	"github.com/src/main/app/log"
+	"github.com/src/main/app/metrics"
+	"github.com/src/main/app/server"
 )
 
 type AppClient interface {
@@ -48,7 +46,7 @@ func (c HTTPPusherClient) PostMessage(requestBody *RequestBody) error {
 	}
 
 	switch {
-	case response.StatusCode >= 200 && response.StatusCode < 300:
+	case c.isSuccess(response):
 		metrics.Collector.IncrementCounter(metrics.PusherStatusOK)
 	case response.StatusCode >= 400 && response.StatusCode < 500:
 		metrics.Collector.IncrementCounter(metrics.PusherStatus40x)
@@ -56,11 +54,15 @@ func (c HTTPPusherClient) PostMessage(requestBody *RequestBody) error {
 		metrics.Collector.IncrementCounter(metrics.PusherStatus50x)
 	}
 
-	if response.StatusCode != http.StatusOK {
+	if !c.isSuccess(response) {
 		return server.NewError(response.StatusCode, response.String())
 	}
 
 	return nil
+}
+
+func (c HTTPPusherClient) isSuccess(response *rest.Response) bool {
+	return response.StatusCode >= 200 && response.StatusCode < 300
 }
 
 type RequestBody struct {

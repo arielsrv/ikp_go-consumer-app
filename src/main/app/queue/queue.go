@@ -6,15 +6,16 @@ import (
 	"fmt"
 	"time"
 
-	properties "github.com/src/main/app/config"
-	"github.com/src/main/app/helpers/types"
-	"github.com/src/main/app/log"
+	"github.com/src/main/app/helpers/arrays"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"
+	properties "github.com/src/main/app/config"
+	"github.com/src/main/app/helpers/types"
+	"github.com/src/main/app/log"
 )
 
 type MessageClient interface {
@@ -99,15 +100,19 @@ func (s Client) Receive(ctx context.Context) ([]MessageDTO, error) {
 		return nil, fmt.Errorf("receive: %w", err)
 	}
 
-	var messages []MessageDTO
-	for _, message := range receiveMessageOutput.Messages {
-		messageDTO := new(MessageDTO)
-		messageDTO.Body = types.StringValue(message.Body)
-		messageDTO.ReceiptHandle = types.StringValue(message.ReceiptHandle)
-		messages = append(messages, *messageDTO)
+	if !arrays.IsEmpty(receiveMessageOutput.Messages) {
+		messages := make([]MessageDTO, len(receiveMessageOutput.Messages))
+		for i, message := range receiveMessageOutput.Messages {
+			messageDTO := new(MessageDTO)
+			messageDTO.Body = types.StringValue(message.Body)
+			messageDTO.ReceiptHandle = types.StringValue(message.ReceiptHandle)
+			messages[i] = *messageDTO
+		}
+
+		return messages, nil
 	}
 
-	return messages, nil
+	return nil, nil
 }
 
 func (s Client) Delete(ctx context.Context, receiptHandle string) error {

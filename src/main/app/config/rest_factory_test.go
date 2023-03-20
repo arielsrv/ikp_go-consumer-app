@@ -7,9 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/src/main/app/config"
-
 	"github.com/arielsrv/go-archaius"
+	"github.com/src/main/app/config"
 	"github.com/stretchr/testify/assert"
 )
 

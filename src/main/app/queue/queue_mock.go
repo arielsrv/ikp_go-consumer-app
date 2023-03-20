@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"
+	"github.com/src/main/app/helpers/arrays"
 	"github.com/src/main/app/helpers/types"
 )
 
@@ -39,7 +40,7 @@ func (m *MockSQS) ReceiveMessageWithContext(
 	in *sqs.ReceiveMessageInput,
 	_ ...request.Option,
 ) (*sqs.ReceiveMessageOutput, error) {
-	if len(m.messages[*in.QueueUrl]) == 0 {
+	if arrays.IsEmpty(m.messages[*in.QueueUrl]) {
 		return &sqs.ReceiveMessageOutput{}, nil
 	}
 	response := m.messages[*in.QueueUrl][0:1]
@@ -53,7 +54,7 @@ func (m *MockSQS) DeleteMessageWithContext(
 	in *sqs.DeleteMessageInput,
 	_ ...request.Option,
 ) (*sqs.DeleteMessageOutput, error) {
-	if len(m.messages[*in.QueueUrl]) == 0 {
+	if arrays.IsEmpty(m.messages[*in.QueueUrl]) {
 		return nil, errors.New("empty queue")
 	}
 

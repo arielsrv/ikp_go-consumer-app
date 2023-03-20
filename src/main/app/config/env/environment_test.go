@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/src/main/app/config/env"
-
 	"github.com/stretchr/testify/assert"
 )
 

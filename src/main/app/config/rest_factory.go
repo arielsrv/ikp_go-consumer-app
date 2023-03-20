@@ -6,11 +6,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/src/main/app/helpers/arrays"
-
-	"github.com/arielsrv/ikp_go-restclient/rest"
-
 	"github.com/arielsrv/go-archaius"
+	"github.com/arielsrv/ikp_go-restclient/rest"
+	"github.com/ugurcsen/gods-generic/lists/arraylist"
 )
 
 const (
@@ -34,7 +32,7 @@ func ProvideRestClients() *RESTClientFactory {
 	instance.Do(func() {
 		restPoolFactory := &RESTPoolFactory{builders: map[string]*rest.RequestBuilder{}}
 		poolNames := getNamesInKeys(restPoolPattern)
-		for _, name := range poolNames {
+		for _, name := range poolNames.Values() {
 			restPool := &rest.RequestBuilder{
 				Timeout: time.Millisecond *
 					time.Duration(TryInt(fmt.Sprintf("rest.pool.%s.pool.timeout", name), DefaultPoolTimeout)),
@@ -50,7 +48,7 @@ func ProvideRestClients() *RESTClientFactory {
 
 		restClientFactory = RESTClientFactory{clients: map[string]*rest.RequestBuilder{}}
 		clientNames := getNamesInKeys(restClientPattern)
-		for _, name := range clientNames {
+		for _, name := range clientNames.Values() {
 			poolName := String(fmt.Sprintf("rest.client.%s.pool", name))
 			pool := restPoolFactory.getPool(poolName)
 			restClientFactory.register(name, pool)
@@ -61,12 +59,12 @@ func ProvideRestClients() *RESTClientFactory {
 }
 
 type RESTPoolFactory struct {
-	restPools []*rest.RequestBuilder
+	restPools arraylist.List[*rest.RequestBuilder]
 	builders  map[string]*rest.RequestBuilder
 }
 
 func (r *RESTPoolFactory) add(rb *rest.RequestBuilder) {
-	r.restPools = append(r.restPools, rb)
+	r.restPools.Add(rb)
 }
 
 func (r *RESTPoolFactory) register(name string, rb *rest.RequestBuilder) {
@@ -93,16 +91,17 @@ func (r *RESTClientFactory) GetClients() map[string]*rest.RequestBuilder {
 	return r.clients
 }
 
-func getNamesInKeys(regex *regexp.Regexp) []string {
-	var names []string
+func getNamesInKeys(regex *regexp.Regexp) arraylist.List[string] {
+	names := arraylist.List[string]{}
+
 	configs := archaius.GetConfigs()
 	for key := range configs {
 		match := regex.FindStringSubmatch(key)
 		for i := range regex.SubexpNames() {
 			if i > 0 && i <= len(match) {
 				group := match[1]
-				if !arrays.Contains(names, group) {
-					names = append(names, group)
+				if !names.Contains(group) {
+					names.Add(group)
 				}
 			}
 		}

@@ -4,11 +4,10 @@ import (
 	"context"
 	"sync"
 
+	"github.com/src/main/app/helpers/arrays"
 	"github.com/src/main/app/log"
-
-	"github.com/src/main/app/queue"
-
 	"github.com/src/main/app/pusher"
+	"github.com/src/main/app/queue"
 )
 
 type Consumer struct {
@@ -26,24 +25,6 @@ type Config struct {
 	TaskResolverType TaskResolverType
 }
 
-var (
-	instance     sync.Once
-	taskResolver = &TaskResolver[queue.MessageDTO]{
-		handlers: make(map[string]ElementHandler[queue.MessageDTO]),
-	}
-)
-
-func ProvideTaskResolver() *TaskResolver[queue.MessageDTO] {
-	instance.Do(func() {
-		taskResolver = &TaskResolver[queue.MessageDTO]{
-			handlers: make(map[string]ElementHandler[queue.MessageDTO]),
-		}
-		taskResolver.handlers[string(Sync)] = &syncHandler[queue.MessageDTO]{}
-		taskResolver.handlers[string(Async)] = &asyncHandler[queue.MessageDTO]{}
-	})
-	return taskResolver
-}
-
 func NewConsumer(config Config) Consumer {
 	return Consumer{
 		messageClient:    config.MessageClient,
@@ -58,6 +39,7 @@ func (c Consumer) Start(ctx context.Context) {
 	wg := &sync.WaitGroup{}
 	wg.Add(c.workers)
 
+	// workers.Each(func() { c.worker
 	for i := 0; i < c.workers; i++ {
 		go c.worker(ctx, wg, i)
 	}
@@ -83,16 +65,12 @@ func (c Consumer) worker(ctx context.Context, wg *sync.WaitGroup, workerID int) 
 			continue
 		}
 
-		if !isEmpty(messages) {
+		if !arrays.IsEmpty(messages) {
 			c.taskResolver.
 				Resolve(c.taskResolverType).
 				Process(ctx, messages, c.sendAndDelete)
 		}
 	}
-}
-
-func isEmpty(messages []queue.MessageDTO) bool {
-	return len(messages) == 0
 }
 
 func (c Consumer) sendAndDelete(ctx context.Context, message *queue.MessageDTO) {

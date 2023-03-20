@@ -3,12 +3,10 @@ package pusher
 import (
 	"encoding/json"
 
-	"github.com/src/main/app/queue"
-
+	"github.com/src/main/app/client"
 	"github.com/src/main/app/log"
 	"github.com/src/main/app/metrics"
-
-	"github.com/src/main/app/client"
+	"github.com/src/main/app/queue"
 )
 
 type Pusher interface {

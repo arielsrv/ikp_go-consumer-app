@@ -11,6 +11,7 @@ import (
 	"github.com/src/main/app/config/env"
 	"github.com/src/main/app/helpers/files"
 	"github.com/src/main/app/log"
+	"github.com/ugurcsen/gods-generic/lists/arraylist"
 )
 
 const (
@@ -36,26 +37,26 @@ func init() {
 		env.GetEnv(),
 		env.GetScope()
 
-	var compositeConfig []string
+	compositeConfig := arraylist.New[string]()
 
 	scopeConfig := fmt.Sprintf("%s/%s/%s.%s", propertiesPath, environment, scope, File)
 	if files.Exist(scopeConfig) {
-		compositeConfig = append(compositeConfig, scopeConfig)
+		compositeConfig.Add(scopeConfig)
 	}
 
 	envConfig := fmt.Sprintf("%s/%s/%s", propertiesPath, environment, File)
 	if files.Exist(envConfig) {
-		compositeConfig = append(compositeConfig, envConfig)
+		compositeConfig.Add(envConfig)
 	}
 
 	sharedConfig := fmt.Sprintf("%s/%s", propertiesPath, File)
 	if files.Exist(sharedConfig) {
-		compositeConfig = append(compositeConfig, sharedConfig)
+		compositeConfig.Add(sharedConfig)
 	}
 
 	err = archaius.Init(
 		archaius.WithENVSource(),
-		archaius.WithRequiredFiles(compositeConfig),
+		archaius.WithRequiredFiles(compositeConfig.Values()),
 	)
 
 	if err != nil {
