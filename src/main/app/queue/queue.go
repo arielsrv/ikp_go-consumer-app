@@ -9,11 +9,9 @@ import (
 	"github.com/src/main/app/helpers/arrays"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"
-	properties "github.com/src/main/app/config"
 	"github.com/src/main/app/helpers/types"
 	"github.com/src/main/app/log"
 )
@@ -27,7 +25,7 @@ type Client struct {
 	timeout time.Duration
 	sqsiface.SQSAPI
 	QueueURL string
-	MaxMsg   int64
+	MaxMsg   int
 }
 
 type MessageDTO struct {
@@ -36,51 +34,23 @@ type MessageDTO struct {
 }
 
 type Config struct {
-	QueueName string
-	Parallel  int
-	Timeout   int
+	Name     string
+	URL      string
+	Parallel int
+	Timeout  int
 }
 
-func NewClient(config Config) (*Client, error) {
+func NewClient(config Config, session *session.Session) (*Client, error) {
 	if config.Parallel < 1 || config.Parallel > 10 {
 		log.Errorf("receive argument: parallel valid values: 1 to 10: given %d", config.Parallel)
 		return nil, errors.New("invalidad parallel value")
 	}
 
-	awsSession, err := session.NewSessionWithOptions(
-		session.Options{
-			Config: aws.Config{
-				Credentials: credentials.
-					NewStaticCredentials(
-						properties.String("aws.id"),
-						properties.String("aws.secret"), ""),
-				Region:           aws.String(properties.String("aws.region")),
-				Endpoint:         aws.String(properties.String("aws.url")),
-				S3ForcePathStyle: aws.Bool(true),
-			},
-			Profile: properties.String("aws.profile"),
-		},
-	)
-
-	if err != nil {
-		log.Errorf("aws session error: %s", err)
-		return nil, err
-	}
-
-	sqsClient := sqs.New(awsSession)
-	responseQueueURL, err := sqsClient.GetQueueUrl(&sqs.GetQueueUrlInput{
-		QueueName: types.String(config.QueueName),
-	})
-	if err != nil {
-		log.Errorf("sqs session error: %s", err)
-		return nil, err
-	}
-
 	return &Client{
 		timeout:  time.Millisecond * time.Duration(config.Timeout),
-		SQSAPI:   sqsClient,
-		QueueURL: types.StringValue(responseQueueURL.QueueUrl),
-		MaxMsg:   int64(config.Parallel),
+		SQSAPI:   sqs.New(session),
+		QueueURL: config.URL,
+		MaxMsg:   config.Parallel,
 	}, nil
 }
 
@@ -92,7 +62,7 @@ func (s Client) Receive(ctx context.Context) ([]MessageDTO, error) {
 
 	receiveMessageOutput, err := s.ReceiveMessageWithContext(ctx, &sqs.ReceiveMessageInput{
 		QueueUrl:              aws.String(s.QueueURL),
-		MaxNumberOfMessages:   aws.Int64(s.MaxMsg),
+		MaxNumberOfMessages:   aws.Int64(int64(s.MaxMsg)),
 		WaitTimeSeconds:       aws.Int64(int64(s.timeout.Seconds())),
 		MessageAttributeNames: aws.StringSlice([]string{"All"}),
 	})

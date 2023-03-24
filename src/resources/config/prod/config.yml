@@ -5,7 +5,8 @@ log.level: info
 # queues-clients
 queues:
   orders:
-    name: orders-consumer
+    name: { queue-name }
+    url: { URL }/queue-name
     parallel: 2 # default is 2
     timeout: 1000
 

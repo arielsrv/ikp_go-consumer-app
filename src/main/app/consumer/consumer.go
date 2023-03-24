@@ -3,6 +3,7 @@ package consumer
 import (
 	"context"
 	"sync"
+	"time"
 
 	"github.com/src/main/app/helpers/arrays"
 	"github.com/src/main/app/log"
@@ -60,15 +61,19 @@ func (c Consumer) worker(ctx context.Context, wg *sync.WaitGroup, workerID int) 
 
 		messages, err := c.messageClient.Receive(ctx)
 		if err != nil {
-			// Critical error
-			log.Errorf("worker %d: receive error: %s\n", workerID, err.Error())
+			log.Errorf("worker %d: critical receive error: %s\n", workerID, err.Error())
+			time.Sleep(time.Millisecond * 1000)
 			continue
 		}
 
 		if !arrays.IsEmpty(messages) {
-			c.taskResolver.
-				Resolve(c.taskResolverType).
-				Process(ctx, messages, c.sendAndDelete)
+			resolver, resolverErr := c.taskResolver.Resolve(c.taskResolverType)
+			if resolverErr != nil {
+				log.Errorf("worker %d: critical resolver error: %s\n", workerID, resolverErr.Error())
+				time.Sleep(time.Millisecond * 1000)
+				continue
+			}
+			resolver.Process(ctx, messages, c.sendAndDelete)
 		}
 	}
 }

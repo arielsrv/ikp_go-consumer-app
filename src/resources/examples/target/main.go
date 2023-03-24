@@ -46,9 +46,7 @@ func main() {
 				log.Println(err)
 			}
 			time.Sleep(time.Millisecond * time.Duration(timeout))
-			processMessage(stringValue, messageDTO)
-		} else {
-			return c.SendString(stringValue)
+			handleMsg(stringValue, messageDTO)
 		}
 
 		return c.SendString(stringValue)
@@ -59,7 +57,7 @@ func main() {
 	}
 }
 
-func processMessage(stringValue string, messageDTO model.MessageDTO) {
+func handleMsg(stringValue string, messageDTO model.MessageDTO) {
 	log.Println(stringValue) // process the message
 	var orderDto model.OrderDTO
 	err := json.Unmarshal([]byte(messageDTO.Msg), &orderDto)

@@ -144,3 +144,48 @@ func TestNewConsumerSyncErr(t *testing.T) {
 	assert.NotNil(t, receiveMessageOutput.Messages[0])
 	assert.Equal(t, receiveMessageOutput.Messages[0].Body, types.String("Hello, world!"))
 }
+
+func TestNewConsumerSyncResolveErr(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(500))
+	defer cancel()
+
+	httpPusher := new(MockPusher)
+	httpPusher.On("SendMessage").Return(errors.New("internal server error"))
+
+	queueClient := queue.NewTestClient("https://queues.com/my-queue")
+	output, err := queueClient.SendMessage(&sqs.SendMessageInput{
+		MessageBody: aws.String("Hello, world!"),
+		QueueUrl:    aws.String("https://queues.com/my-queue"),
+	})
+	assert.NoError(t, err)
+	assert.NotNil(t, output)
+
+	_, _ = queueClient.ReceiveMessageWithContext(ctx, &sqs.ReceiveMessageInput{
+		QueueUrl:              aws.String("https://queues.com/my-queue"),
+		MaxNumberOfMessages:   aws.Int64(int64(1)),
+		WaitTimeSeconds:       aws.Int64(10),
+		MessageAttributeNames: aws.StringSlice([]string{"All"}),
+	})
+
+	consumer.NewConsumer(
+		consumer.Config{
+			MessageClient:    queueClient,
+			Pusher:           httpPusher,
+			Workers:          1,
+			TaskResolverType: "invalid resolver",
+		}).
+		Start(ctx)
+
+	receiveMessageOutput, err := queueClient.ReceiveMessageWithContext(ctx, &sqs.ReceiveMessageInput{
+		QueueUrl:              aws.String("https://queues.com/my-queue"),
+		MaxNumberOfMessages:   aws.Int64(int64(1)),
+		WaitTimeSeconds:       aws.Int64(10),
+		MessageAttributeNames: aws.StringSlice([]string{"All"}),
+	})
+
+	assert.NoError(t, err)
+	assert.NotNil(t, receiveMessageOutput)
+	assert.NotNil(t, receiveMessageOutput.Messages)
+	assert.NotNil(t, receiveMessageOutput.Messages[0])
+	assert.Equal(t, receiveMessageOutput.Messages[0].Body, types.String("Hello, world!"))
+}

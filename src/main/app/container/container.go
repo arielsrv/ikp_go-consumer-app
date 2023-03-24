@@ -4,6 +4,10 @@ import (
 	"runtime"
 	"sync"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
+
 	"github.com/src/main/app/client"
 	"github.com/src/main/app/config"
 	"github.com/src/main/app/consumer"
@@ -40,10 +44,11 @@ func ProvideQueueConsumer() consumer.Consumer {
 		httpPusher := pusher.NewHTTPPusher(pusherClient)
 
 		queueClient, err := queue.NewClient(queue.Config{
-			QueueName: config.String("queues.orders.name"),
-			Parallel:  config.TryInt("queues.orders.parallel", 10),
-			Timeout:   config.TryInt("queues.orders.timeout", 1000),
-		})
+			Name:     config.String("queues.orders.name"),
+			URL:      config.String("queues.orders.url"),
+			Parallel: config.TryInt("queues.orders.parallel", 10),
+			Timeout:  config.TryInt("queues.orders.timeout", 1000),
+		}, ProvideAWSSession())
 
 		if err != nil {
 			log.Fatal(err)
@@ -58,4 +63,35 @@ func ProvideQueueConsumer() consumer.Consumer {
 	})
 
 	return topicConsumer
+}
+
+var (
+	sessionHandlerOnce sync.Once
+	awsSession         *session.Session
+)
+
+func ProvideAWSSession() *session.Session {
+	sessionHandlerOnce.Do(func() {
+		sessionWithOptions, err := session.NewSessionWithOptions(
+			session.Options{
+				Config: aws.Config{
+					Credentials: credentials.
+						NewStaticCredentials(
+							config.String("aws.id"),
+							config.String("aws.secret"), ""),
+					Region:           aws.String(config.String("aws.region")),
+					Endpoint:         aws.String(config.String("aws.url")),
+					S3ForcePathStyle: aws.Bool(true),
+				},
+				Profile: config.String("aws.profile"),
+			},
+		)
+
+		if err != nil {
+			log.Errorf("aws session error: %s", err)
+		}
+
+		awsSession = sessionWithOptions
+	})
+	return awsSession
 }

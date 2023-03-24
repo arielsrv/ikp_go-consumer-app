@@ -2,6 +2,7 @@ package consumer
 
 import (
 	"context"
+	"fmt"
 	"sync"
 
 	"github.com/ugurcsen/gods-generic/maps/hashmap"
@@ -21,12 +22,12 @@ type TaskResolver[T comparable] struct {
 	handlers *hashmap.Map[TaskResolverType, ElementHandler[T]]
 }
 
-func (r *TaskResolver[T]) Resolve(taskResolverType TaskResolverType) ElementHandler[T] {
+func (r *TaskResolver[T]) Resolve(taskResolverType TaskResolverType) (ElementHandler[T], error) {
 	value, found := r.handlers.Get(taskResolverType)
 	if !found {
-		return nil
+		return nil, fmt.Errorf("invalid task resolver type: %s", string(taskResolverType))
 	}
-	return value
+	return value, nil
 }
 
 type ElementHandler[T comparable] interface {

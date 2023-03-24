@@ -1,6 +1,10 @@
 package files
 
-import "os"
+import (
+	"os"
+
+	"github.com/src/main/app/log"
+)
 
 func Exist(path string) bool {
 	fileInfo, err := os.Stat(path)
@@ -10,6 +14,7 @@ func Exist(path string) bool {
 	}
 
 	if fileInfo.IsDir() {
+		log.Warnf("path: [%s] is dir", path)
 		return false
 	}
 

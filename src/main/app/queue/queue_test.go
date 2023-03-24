@@ -4,6 +4,8 @@ import (
 	"context"
 	"testing"
 
+	"github.com/src/main/app/container"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/src/main/app/config"
@@ -13,21 +15,23 @@ import (
 
 func TestNewClient(t *testing.T) {
 	queueClient, err := queue.NewClient(queue.Config{
-		QueueName: config.String("queue"),
-		Parallel:  config.TryInt("queues.orders.parallel", 10),
-		Timeout:   config.TryInt("queues.orders.timeout", 1000),
-	})
+		Name:     config.String("queue"),
+		URL:      config.String("url"),
+		Parallel: config.TryInt("queues.orders.parallel", 10),
+		Timeout:  config.TryInt("queues.orders.timeout", 1000),
+	}, container.ProvideAWSSession())
 
-	assert.Error(t, err)
-	assert.Nil(t, queueClient)
+	assert.NoError(t, err)
+	assert.NotNil(t, queueClient)
 }
 
 func TestNewClientErr(t *testing.T) {
 	queueClient, err := queue.NewClient(queue.Config{
-		QueueName: config.String("queues.orders.name"),
-		Parallel:  config.TryInt("", 20),
-		Timeout:   config.TryInt("queues.orders.timeout", 1000),
-	})
+		Name:     config.String("queues.orders.name"),
+		URL:      config.String("url"),
+		Parallel: config.TryInt("", 20),
+		Timeout:  config.TryInt("queues.orders.timeout", 1000),
+	}, container.ProvideAWSSession())
 
 	assert.Error(t, err)
 	assert.Nil(t, queueClient)

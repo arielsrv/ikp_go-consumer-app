@@ -4,6 +4,8 @@ import (
 	"errors"
 	"time"
 
+	"github.com/stretchr/testify/mock"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/sqs"
@@ -13,6 +15,7 @@ import (
 )
 
 type MockSQS struct {
+	mock.Mock
 	sqsiface.SQSAPI
 	messages map[string][]*sqs.Message
 }
