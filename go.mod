@@ -8,12 +8,12 @@ require (
 	github.com/arielsrv/go-archaius v0.0.8
 	github.com/arielsrv/ikp_go-restclient v0.0.5
 	github.com/aws/aws-sdk-go v1.44.228
-	github.com/gofiber/fiber/v2 v2.42.0
-	github.com/gofiber/swagger v0.1.9
+	github.com/gofiber/fiber/v2 v2.43.0
+	github.com/gofiber/swagger v0.1.10
 	github.com/prometheus/client_golang v1.14.0
 	github.com/sirupsen/logrus v1.9.0
 	github.com/stretchr/testify v1.8.2
-	github.com/swaggo/swag v1.8.11
+	github.com/swaggo/swag v1.8.12
 	github.com/ugurcsen/gods-generic v0.10.2
 	github.com/valyala/fasthttp v1.45.0
 )
@@ -51,11 +51,10 @@ require (
 	github.com/savsgio/gotils v0.0.0-20230208104028-c358bd845dee // indirect
 	github.com/spf13/cast v1.5.0 // indirect
 	github.com/stretchr/objx v0.5.0 // indirect
-	github.com/swaggo/files v1.0.0 // indirect
+	github.com/swaggo/files/v2 v2.0.0 // indirect
 	github.com/tinylib/msgp v1.1.8 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect
-	golang.org/x/net v0.8.0 // indirect
 	golang.org/x/sys v0.6.0 // indirect
 	golang.org/x/tools v0.7.0 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
