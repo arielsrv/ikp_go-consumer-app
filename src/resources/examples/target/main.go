@@ -2,13 +2,12 @@ package main
 
 import (
 	"encoding/json"
-	"examples/caching"
 	"flag"
 	"log"
 	"time"
 
+	"examples/caching"
 	"examples/model"
-
 	"github.com/gofiber/fiber/v2"
 )
 

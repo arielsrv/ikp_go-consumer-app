@@ -3,29 +3,36 @@ package metrics
 import (
 	"time"
 
-	"github.com/ugurcsen/gods-generic/maps/hashmap"
-
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/src/main/app/config"
 	"github.com/src/main/app/log"
+	"github.com/ugurcsen/gods-generic/maps/hashmap"
 )
 
 type IMetricCollector interface {
 	IncrementCounter(name Name)
-	RecordExecutionTime(name Name, value int64)
+	Record(name Name, value int)
+	RecordExecutionTime(name Name, value time.Duration)
 }
 
 type Name string
 
+// Pusher metrics.
 const (
-	PusherSuccess     Name = "pusher_success"
-	PusherError       Name = "pusher_error"
-	PusherStatusOK    Name = "pusher_http_200"
-	PusherStatus40x   Name = "pusher_http_4xx"
-	PusherStatus50x   Name = "pusher_http_5xx"
-	PusherHTTPTime    Name = "pusher_http_time"
-	PusherHTTPTimeout Name = "pusher_http_timeout"
-	Generic           Name = "pusher_generic_counter"
+	PusherSuccess     Name = "app_pusher_success"
+	PusherError       Name = "app_pusher_error"
+	PusherStatusOK    Name = "app_pusher_http_200"
+	PusherStatus40x   Name = "app_pusher_http_4xx"
+	PusherStatus50x   Name = "app_pusher_http_5xx"
+	PusherHTTPTime    Name = "app_pusher_http_time"
+	PusherHTTPTimeout Name = "app_pusher_http_timeout"
+	Generic           Name = "app_pusher_generic_counter"
+)
+
+// Consumer and queue metrics.
+const (
+	ApproximateNumberOfMessages Name = "app_approximate_number_of_messages"
+	CurrentWorkers              Name = "app_current_workers"
 )
 
 var (
@@ -94,6 +101,26 @@ func newMetricsCollector() *metricsCollector {
 	prometheus.MustRegister(pusher50x)
 	counters.Put(PusherStatus50x, pusher50x)
 
+	approximateNumberOfMessages := prometheus.NewSummary(
+		prometheus.SummaryOpts{
+			Namespace:   namespace,
+			Name:        string(ApproximateNumberOfMessages),
+			ConstLabels: labels,
+		},
+	)
+	prometheus.MustRegister(approximateNumberOfMessages)
+	summaries.Put(ApproximateNumberOfMessages, approximateNumberOfMessages)
+
+	currentWorkers := prometheus.NewSummary(
+		prometheus.SummaryOpts{
+			Namespace:   namespace,
+			Name:        string(CurrentWorkers),
+			ConstLabels: labels,
+		},
+	)
+	prometheus.MustRegister(currentWorkers)
+	summaries.Put(CurrentWorkers, currentWorkers)
+
 	client := prometheus.NewSummary(prometheus.SummaryOpts{
 		Namespace:   namespace,
 		Name:        string(PusherHTTPTime),
@@ -133,6 +160,14 @@ func (m metricsCollector) IncrementCounter(name Name) {
 	} else {
 		log.Warnf("missing metric collector %s, fallback to generic metric collector", name)
 		genericCounter.WithLabelValues(string(name)).Inc()
+	}
+}
+
+func (m metricsCollector) Record(name Name, value int) {
+	if summary, ok := summaries.Get(name); ok {
+		summary.Observe(float64(value))
+	} else {
+		log.Warnf("missing metric collector: %s", string(name))
 	}
 }
 

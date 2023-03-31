@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	"github.com/src/main/app/client"
+	"github.com/src/main/app/infrastructure/queue"
 	"github.com/src/main/app/pusher"
-	"github.com/src/main/app/queue"
 	"github.com/src/main/app/server"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"

@@ -59,3 +59,7 @@ func IsProd() bool {
 func IsEmpty(value string) bool {
 	return value == ""
 }
+
+func IsNil[TValue any](value *TValue) bool {
+	return value == nil
+}

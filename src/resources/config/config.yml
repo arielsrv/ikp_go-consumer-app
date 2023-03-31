@@ -1,1 +1,7 @@
-app.name: go-consumer-app # template
+app.name: go-consumer-app
+consumers:
+  distributed: false
+
+cache:
+  host: localhost
+  port: 6379

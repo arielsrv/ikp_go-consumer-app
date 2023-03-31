@@ -9,24 +9,47 @@ env:
   COVERAGE_HTML_FILE: coverage.html
   SWAGGER_INPUT_FOLDER: src/main
   SWAGGER_OUTPUT_FOLDER: src/resources/docs
-  ORM_OUTPUT_FOLDER: src/main/app/ent
 
 tasks:
+  setup:
+    desc: Minimal scripts to send a receive messages
+    cmds:
+      - ./setup.sh
+  lsif:
+    desc: Code Intelligence
+    cmds:
+      - lsif-go --repository-remote=gitlab.com/iskaypet/digital/tools/dev/go-consumer-app -v
   lint:
     desc: Use golangci-lint (.golangci.yml).
     cmds:
       - golangci-lint run --fix
+  lint:report:
+    desc: Linter report
+    cmds:
+      - golangci-lint run --issues-exit-code 0 --print-issued-lines=false --out-format code-climate:gl-code-quality-report.json,line-number
+  test:race:
+    desc: Run race conditions test.
+    cmds:
+      - go test -race ./...
   test:
     desc: Run test.
     cmds:
-      #- go test -race ./...
       - go test ./...
+  test:report:
+    desc: CI test report.
+    cmds:
+      - go install gotest.tools/gotestsum@latest
+      - gotestsum --junitfile report.xml --format testname
   coverage:
     desc: Makes report coverage.
     cmds:
       - go test ./... -covermode=count -coverprofile=$COVERAGE_OUT_FILE
       - go tool cover -html $COVERAGE_OUT_FILE -o $COVERAGE_HTML_FILE
       - go tool cover -func=$COVERAGE_OUT_FILE -o=$COVERAGE_OUT_FILE
+  coverage:report:
+    desc: CI coverage report
+    cmds:
+      - CGO_ENABLED=0 go test ./... -coverprofile=coverage-report.out
   clean:
     desc: Clean binaries and reports.
     cmds:

@@ -2,11 +2,20 @@ app.env: prod
 protocol: https
 log.level: info
 
+host: 0.0.0.0
+port: '8080'
+
+# @TODO: aws by env
+aws:
+  url: http://localhost:4566
+  region: us-east-1
+  partition: aws
+
 # queues-clients
 queues:
   orders:
-    name: { queue-name }
-    url: { URL }/queue-name
+    name: queue-name
+    url: https://domain/queue-name
     parallel: 2 # default is 2
     timeout: 1000
 

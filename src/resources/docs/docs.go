@@ -16,6 +16,75 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/consumer/start": {
+            "put": {
+                "description": "Starts the consumer",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Consumer"
+                ],
+                "summary": "Start consumer",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.AppStatusDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/consumer/status": {
+            "get": {
+                "description": "Started or stopped",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Consumer"
+                ],
+                "summary": "Get status for current consumer",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.AppStatusDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/consumer/stop": {
+            "put": {
+                "description": "Started or stopped",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Consumer"
+                ],
+                "summary": "Get status for current consumer",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.AppStatusDTO"
+                        }
+                    }
+                }
+            }
+        },
         "/ping": {
             "get": {
                 "description": "Ping",
@@ -35,6 +104,27 @@ const docTemplate = `{
                     }
                 }
             }
+        }
+    },
+    "definitions": {
+        "model.AppStatusDTO": {
+            "type": "object",
+            "properties": {
+                "status": {
+                    "$ref": "#/definitions/model.Status"
+                }
+            }
+        },
+        "model.Status": {
+            "type": "string",
+            "enum": [
+                "started",
+                "stopped"
+            ],
+            "x-enum-varnames": [
+                "Started",
+                "Stopped"
+            ]
         }
     }
 }`

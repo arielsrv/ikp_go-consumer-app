@@ -5,47 +5,78 @@ import (
 	"sync"
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/src/main/app/helpers/arrays"
+	"github.com/src/main/app/infrastructure/queue"
 	"github.com/src/main/app/log"
+	"github.com/src/main/app/metrics"
+	"github.com/src/main/app/model"
 	"github.com/src/main/app/pusher"
-	"github.com/src/main/app/queue"
+	"github.com/src/main/app/services"
 )
 
 type Consumer struct {
-	messageClient    queue.MessageClient
+	queueService     queue.Service
 	pusher           pusher.Pusher
 	workers          int
 	taskResolverType TaskResolverType
 	taskResolver     *TaskResolver[queue.MessageDTO]
+	consumerService  services.IConsumerService
 }
 
 type Config struct {
-	MessageClient    queue.MessageClient
+	QueueService     queue.Service
 	Pusher           pusher.Pusher
 	Workers          int
 	TaskResolverType TaskResolverType
 }
 
-func NewConsumer(config Config) Consumer {
+func NewConsumer(config Config, consumerService services.IConsumerService) Consumer {
 	return Consumer{
-		messageClient:    config.MessageClient,
+		queueService:     config.QueueService,
 		pusher:           config.Pusher,
 		workers:          config.Workers,
 		taskResolverType: config.TaskResolverType,
 		taskResolver:     ProvideTaskResolver(),
+		consumerService:  consumerService,
 	}
 }
 
 func (c Consumer) Start(ctx context.Context) {
 	wg := &sync.WaitGroup{}
-	wg.Add(c.workers)
+	wg.Add(c.workers + 1)
 
-	// workers.Each(func() { c.worker
 	for i := 0; i < c.workers; i++ {
 		go c.worker(ctx, wg, i)
 	}
 
+	go c.collectMetrics(ctx, wg, c.workers)
+
 	wg.Wait()
+}
+
+func (c Consumer) collectMetrics(ctx context.Context, wg *sync.WaitGroup, currentWorkers int) {
+	defer wg.Done()
+	for {
+		select {
+		case <-ctx.Done():
+			log.Infof("worker %d: stopped\n", currentWorkers)
+			return
+		default:
+		}
+
+		metrics.Collector.Record(metrics.CurrentWorkers, currentWorkers)
+
+		approximateNumberOfMessages, err := c.queueService.Count(ctx)
+		if err != nil {
+			log.Warnf("metrics approximateNumberOfMessages error: %s", err.Error())
+			time.Sleep(time.Millisecond * 1000)
+			continue
+		}
+
+		metrics.Collector.Record(metrics.ApproximateNumberOfMessages, aws.ToInt(approximateNumberOfMessages))
+		time.Sleep(time.Millisecond * 1000)
+	}
 }
 
 func (c Consumer) worker(ctx context.Context, wg *sync.WaitGroup, workerID int) {
@@ -59,10 +90,15 @@ func (c Consumer) worker(ctx context.Context, wg *sync.WaitGroup, workerID int) 
 		default:
 		}
 
-		messages, err := c.messageClient.Receive(ctx)
+		if c.consumerService.GetAppStatus().Status == model.Stopped {
+			time.Sleep(time.Millisecond * 1000)
+			continue
+		}
+
+		messages, err := c.queueService.Receive(ctx)
 		if err != nil {
 			log.Errorf("worker %d: critical receive error: %s\n", workerID, err.Error())
-			time.Sleep(time.Millisecond * 1000)
+			time.Sleep(time.Millisecond * 5000)
 			continue
 		}
 
@@ -83,7 +119,7 @@ func (c Consumer) sendAndDelete(ctx context.Context, message *queue.MessageDTO) 
 	if err != nil {
 		log.Errorf("pusher error: %s, msg: %s\n", err.Error(), message.Body)
 	} else {
-		err = c.messageClient.Delete(ctx, message.ReceiptHandle)
+		err = c.queueService.Delete(ctx, message.ReceiptHandle)
 		if err != nil {
 			log.Errorf("delete error: %s, msg: %s\n", err.Error(), message.Body)
 		}

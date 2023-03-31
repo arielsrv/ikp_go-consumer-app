@@ -3,6 +3,7 @@ package env_test
 import (
 	"testing"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/src/main/app/config/env"
 	"github.com/stretchr/testify/assert"
 )
@@ -14,6 +15,16 @@ func TestIsEmpty(t *testing.T) {
 
 func TestIsNotEmpty(t *testing.T) {
 	actual := env.IsEmpty("value")
+	assert.False(t, actual)
+}
+
+func TestIsNil(t *testing.T) {
+	actual := env.IsNil[string](nil)
+	assert.True(t, actual)
+}
+
+func TestIsNotNil(t *testing.T) {
+	actual := env.IsNil(aws.String("value"))
 	assert.False(t, actual)
 }
 

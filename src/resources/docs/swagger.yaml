@@ -1,10 +1,69 @@
 basePath: /
+definitions:
+  model.AppStatusDTO:
+    properties:
+      status:
+        $ref: '#/definitions/model.Status'
+    type: object
+  model.Status:
+    enum:
+    - started
+    - stopped
+    type: string
+    x-enum-varnames:
+    - Started
+    - Stopped
 info:
   contact: {}
   description: This is a sample golang template api. Have fun.
   title: Golang Template API
   version: v1.
 paths:
+  /consumer/start:
+    put:
+      consumes:
+      - application/json
+      description: Starts the consumer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.AppStatusDTO'
+      summary: Start consumer
+      tags:
+      - Consumer
+  /consumer/status:
+    get:
+      consumes:
+      - application/json
+      description: Started or stopped
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.AppStatusDTO'
+      summary: Get status for current consumer
+      tags:
+      - Consumer
+  /consumer/stop:
+    put:
+      consumes:
+      - application/json
+      description: Started or stopped
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.AppStatusDTO'
+      summary: Get status for current consumer
+      tags:
+      - Consumer
   /ping:
     get:
       description: Ping

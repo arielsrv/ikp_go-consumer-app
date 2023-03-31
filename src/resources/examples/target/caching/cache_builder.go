@@ -3,9 +3,8 @@ package caching
 import (
 	"time"
 
-	"github.com/moznion/go-optional"
-
 	lru "github.com/arielsrv/golang-lru"
+	"github.com/moznion/go-optional"
 )
 
 type CacheBuilder[TKey any, TValue any] struct {

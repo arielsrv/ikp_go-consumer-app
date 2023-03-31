@@ -15,8 +15,8 @@ import (
 type PingHandlerSuite struct {
 	suite.Suite
 	app         *server.App
-	pingHandler handlers.IPingHandler
 	pingService *MockPingService
+	pingHandler handlers.IPingHandler
 }
 
 func (suite *PingHandlerSuite) SetupTest() {
@@ -26,7 +26,7 @@ func (suite *PingHandlerSuite) SetupTest() {
 	suite.app.Server.Add(http.MethodGet, "/ping", suite.pingHandler.Ping)
 }
 
-func TestRunSuite(t *testing.T) {
+func TestPingSuite(t *testing.T) {
 	suite.Run(t, new(PingHandlerSuite))
 }
 

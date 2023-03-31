@@ -10,10 +10,9 @@ log:
 # aws
 aws:
   url: http://localhost:4566
-  id: development
-  secret: development
-  profile: default
+  partition: aws
   region: us-east-1
+
 
 # queues-clients
 queues:

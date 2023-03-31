@@ -7,22 +7,26 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGetProperty(t *testing.T) {
-	actual := config.String("app.name")
-	assert.Equal(t, "go-consumer-app", actual)
-}
+func TestAppConfig(t *testing.T) {
+	err := config.MockConfig("config_properties.yml")
 
-func TestGetProperty_Err(t *testing.T) {
-	actual := config.String("missing")
-	assert.Equal(t, "", actual)
-}
+	assert.NoError(t, err)
 
-func TestGetIntProperty_Err(t *testing.T) {
-	actual := config.Int("missing")
-	assert.Equal(t, 0, actual)
-}
+	stringValue := config.String("key")
+	assert.Equal(t, "value", stringValue)
 
-func TestGetTryIntProperty_Err(t *testing.T) {
-	actual := config.TryInt("missing", 1)
-	assert.Equal(t, 1, actual)
+	stringValue = config.String("missing")
+	assert.Equal(t, "", stringValue)
+
+	boolValue := config.TryBool("enable", true)
+	assert.True(t, boolValue)
+
+	boolValue = config.TryBool("logger", true)
+	assert.False(t, boolValue)
+
+	intValue := config.TryInt("missing threads", 1)
+	assert.Equal(t, 1, intValue)
+
+	intValue = config.TryInt("threads", 1)
+	assert.Equal(t, 5, intValue)
 }

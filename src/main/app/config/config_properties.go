@@ -88,14 +88,13 @@ func String(key string) string {
 	return value
 }
 
-func Int(key string) int {
-	value, err := archaius.GetValue(key).ToInt()
-	if err != nil {
-		var fallback = 0
-		log.Warnf(fmt.Sprintf("warn: config %s not found, fallback to %d", key, fallback))
-		return fallback
+func TryBool(key string, defaultValue bool) bool {
+	value := archaius.Exist(key)
+	if !value {
+		log.Warnf(fmt.Sprintf("warn: config %s not found, fallback to %t", key, defaultValue))
+		return defaultValue
 	}
-	return value
+	return archaius.GetBool(key, defaultValue)
 }
 
 func TryInt(key string, defaultValue int) int {
@@ -105,4 +104,10 @@ func TryInt(key string, defaultValue int) int {
 		return defaultValue
 	}
 	return value
+}
+
+func MockConfig(file string) error {
+	_, caller, _, _ := runtime.Caller(0)
+	err := archaius.AddFile(fmt.Sprintf("%s/%s", path.Dir(caller), file))
+	return err
 }

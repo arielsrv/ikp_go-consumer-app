@@ -1,19 +1,15 @@
 package config_test
 
 import (
-	"fmt"
-	"path"
-	"runtime"
 	"testing"
 	"time"
 
-	"github.com/arielsrv/go-archaius"
 	"github.com/src/main/app/config"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestProvideRestClients(t *testing.T) {
-	err := setUp("rest_factory_test.yml")
+	err := config.MockConfig("rest_factory_test.yml")
 	assert.NoError(t, err)
 
 	restClientFactory := config.ProvideRestClients()
@@ -35,7 +31,7 @@ func TestProvideRestClients(t *testing.T) {
 }
 
 func TestProvideRestClients_NotReusedPool(t *testing.T) {
-	err := setUp("rest_factory_test.yml")
+	err := config.MockConfig("rest_factory_test.yml")
 	assert.NoError(t, err)
 
 	restClientFactory := config.ProvideRestClients()
@@ -53,10 +49,4 @@ func TestProvideRestClients_NotReusedPool(t *testing.T) {
 	assert.Equal(t, 20, second.CustomPool.MaxIdleConnsPerHost)
 
 	assert.True(t, second != first)
-}
-
-func setUp(file string) error {
-	_, caller, _, _ := runtime.Caller(0)
-	err := archaius.AddFile(fmt.Sprintf("%s/%s", path.Dir(caller), file))
-	return err
 }

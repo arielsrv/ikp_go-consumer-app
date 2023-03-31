@@ -1,6 +1,6 @@
 package arrays
 
-func IsEmpty[T comparable](elements []T) bool {
+func IsEmpty[T any](elements []T) bool {
 	return len(elements) == 0
 }
 

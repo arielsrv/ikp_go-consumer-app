@@ -5,10 +5,9 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/ugurcsen/gods-generic/maps/hashmap"
-
 	"github.com/src/main/app/consumer/resolvers"
-	"github.com/src/main/app/queue"
+	"github.com/src/main/app/infrastructure/queue"
+	"github.com/ugurcsen/gods-generic/maps/hashmap"
 )
 
 type TaskResolverType string

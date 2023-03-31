@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"examples/caching"
-
 	"github.com/stretchr/testify/assert"
 )
 
