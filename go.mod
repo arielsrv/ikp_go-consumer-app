@@ -8,7 +8,7 @@ require (
 	github.com/antonfisher/nested-logrus-formatter v1.3.1
 	github.com/arielsrv/go-archaius v0.0.8
 	github.com/arielsrv/ikp_go-restclient v0.0.5
-	github.com/aws/aws-sdk-go-v2 v1.17.7
+	github.com/aws/aws-sdk-go-v2 v1.17.8
 	github.com/aws/aws-sdk-go-v2/config v1.18.19
 	github.com/aws/aws-sdk-go-v2/service/secretsmanager v1.19.1
 	github.com/aws/aws-sdk-go-v2/service/sqs v1.20.6
