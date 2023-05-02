@@ -19,7 +19,7 @@ require (
 	github.com/redis/go-redis/v9 v9.0.3
 	github.com/sirupsen/logrus v1.9.0
 	github.com/stretchr/testify v1.8.2
-	github.com/swaggo/swag v1.8.12
+	github.com/swaggo/swag v1.16.1
 	github.com/ugurcsen/gods-generic v0.10.2
 	github.com/valyala/fasthttp v1.45.0
 )
