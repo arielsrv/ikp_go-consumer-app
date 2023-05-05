@@ -11,7 +11,7 @@ require (
 	github.com/aws/aws-sdk-go-v2 v1.18.0
 	github.com/aws/aws-sdk-go-v2/config v1.18.19
 	github.com/aws/aws-sdk-go-v2/service/secretsmanager v1.19.6
-	github.com/aws/aws-sdk-go-v2/service/sqs v1.20.6
+	github.com/aws/aws-sdk-go-v2/service/sqs v1.21.0
 	github.com/go-redis/redismock/v9 v9.0.3
 	github.com/gofiber/fiber/v2 v2.43.0
 	github.com/gofiber/swagger v0.1.10
