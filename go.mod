@@ -6,7 +6,7 @@ require (
 	github.com/alicebob/miniredis/v2 v2.30.3
 	github.com/ansrivas/fiberprometheus/v2 v2.6.0
 	github.com/antonfisher/nested-logrus-formatter v1.3.1
-	github.com/arielsrv/go-archaius v0.0.8
+	github.com/arielsrv/go-archaius v0.0.9
 	github.com/arielsrv/ikp_go-restclient v0.0.5
 	github.com/aws/aws-sdk-go-v2 v1.18.1
 	github.com/aws/aws-sdk-go-v2/config v1.18.26
@@ -67,7 +67,7 @@ require (
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/savsgio/dictpool v0.0.0-20221023140959-7bf2e61cea94 // indirect
 	github.com/savsgio/gotils v0.0.0-20230208104028-c358bd845dee // indirect
-	github.com/spf13/cast v1.5.0 // indirect
+	github.com/spf13/cast v1.5.1 // indirect
 	github.com/stretchr/objx v0.5.0 // indirect
 	github.com/swaggo/files/v2 v2.0.0 // indirect
 	github.com/tinylib/msgp v1.1.8 // indirect
