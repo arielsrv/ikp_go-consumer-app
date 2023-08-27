@@ -3,7 +3,7 @@ module github.com
 go 1.20
 
 require (
-	github.com/alicebob/miniredis/v2 v2.30.3
+	github.com/alicebob/miniredis/v2 v2.30.5
 	github.com/ansrivas/fiberprometheus/v2 v2.6.0
 	github.com/antonfisher/nested-logrus-formatter v1.3.1
 	github.com/arielsrv/go-archaius v0.0.9
