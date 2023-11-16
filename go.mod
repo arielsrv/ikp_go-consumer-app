@@ -10,7 +10,7 @@ require (
 	github.com/arielsrv/ikp_go-restclient v0.0.5
 	github.com/aws/aws-sdk-go-v2 v1.23.0
 	github.com/aws/aws-sdk-go-v2/config v1.25.1
-	github.com/aws/aws-sdk-go-v2/service/secretsmanager v1.21.3
+	github.com/aws/aws-sdk-go-v2/service/secretsmanager v1.23.2
 	github.com/aws/aws-sdk-go-v2/service/sqs v1.28.1
 	github.com/go-redis/redismock/v9 v9.2.0
 	github.com/gofiber/fiber/v2 v2.49.2
