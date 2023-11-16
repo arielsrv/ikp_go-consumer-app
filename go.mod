@@ -13,8 +13,8 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/secretsmanager v1.23.2
 	github.com/aws/aws-sdk-go-v2/service/sqs v1.28.1
 	github.com/go-redis/redismock/v9 v9.2.0
-	github.com/gofiber/fiber/v2 v2.49.2
-	github.com/gofiber/swagger v0.1.13
+	github.com/gofiber/fiber/v2 v2.50.0
+	github.com/gofiber/swagger v0.1.14
 	github.com/prometheus/client_golang v1.17.0
 	github.com/redis/go-redis/v9 v9.3.0
 	github.com/sirupsen/logrus v1.9.3
