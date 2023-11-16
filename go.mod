@@ -12,7 +12,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.25.1
 	github.com/aws/aws-sdk-go-v2/service/secretsmanager v1.21.3
 	github.com/aws/aws-sdk-go-v2/service/sqs v1.24.5
-	github.com/go-redis/redismock/v9 v9.0.3
+	github.com/go-redis/redismock/v9 v9.2.0
 	github.com/gofiber/fiber/v2 v2.49.2
 	github.com/gofiber/swagger v0.1.13
 	github.com/prometheus/client_golang v1.17.0
